@@ -20,14 +20,18 @@ impl MemoryJob {
 
 pub struct JobStore {
     scheduler: Scheduler,
-    alias: Option<String>,
+    alias: String,
     jobs: HashMap<String, MemoryJob>,
     // logger
 }
 impl JobStore {
-    pub fn start(&self, scheduler: &Scheduler) {}
+    pub fn start(&self, scheduler: &Scheduler) {
+        print!("Starting JobStore {}", self.alias)
+    }
 
-    pub fn shutdown(&self) {}
+    pub fn shutdown(&self) {
+        print!("Shutting down JobStore {}", self.alias)
+    }
 
     pub fn add_job(&mut self, job: Job, alias: String) {
         self.jobs.entry(alias).or_insert(MemoryJob::new(job));

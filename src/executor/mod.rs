@@ -7,7 +7,7 @@ pub struct Executor {
 
 impl Executor {
     pub fn start(&self, scheduler: &Scheduler) {
-        print!("Starting Executor")
+        print!("Starting Executor {}", self.alias)
     }
     pub fn shutdown(&self) {
         print!("Shutting down Executor {}", self.alias)

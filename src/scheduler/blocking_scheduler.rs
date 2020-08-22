@@ -47,7 +47,7 @@ impl Scheduler {
     }
 
     pub fn add_executor(&mut self, executor: Executor, alias: String) {
-        executor.start();
+        executor.start(self);
         self.executors.entry(alias).or_insert(executor);
     }
 
