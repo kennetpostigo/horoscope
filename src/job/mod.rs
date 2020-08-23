@@ -8,19 +8,19 @@ pub enum Status {
 
 pub struct Job<T: Work> {
     pub executor: String,
-    pub job: T
+    pub job: T,
 }
 
 impl<T: Work> Job<T> {
-    pub fn new(job: T, alias: String) -> Job<T>{
+    pub fn new(job: T, alias: String) -> Job<T> {
         Job {
-            job, 
-            executor: alias
+            job,
+            executor: alias,
         }
     }
 }
 
 #[async_trait]
 pub trait Work {
-   async fn func(&self) -> Status;
+    async fn func(&self) -> Status;
 }

@@ -1,22 +1,23 @@
-use crate::scheduler::blocking_scheduler::Scheduler;
-use std::collections::{HashMap};
+use crate::job::{Job, Work};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use crate::job::{Job, Work};
 
 pub struct MemoryJob<T: Work> {
-    pub job: Arc<Job<T>>,
+    pub job: Job<T>,
     pub start_time: u128,
 }
 
 impl<T: Work> MemoryJob<T> {
     pub fn new(job: T, alias: String) -> MemoryJob<T> {
-        let start = SystemTime::now().duration_since(UNIX_EPOCH).expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
+        let start = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
         let start_time = start.as_millis();
 
         MemoryJob {
-            job: Arc::new(Job::new(job, alias)),
-            start_time
+            job: Job::new(job, alias),
+            start_time,
         }
     }
 }
@@ -27,10 +28,10 @@ pub struct JobStore<T: Work> {
     // logger
 }
 impl<T: Work> JobStore<T> {
-    pub fn new (alias: String) -> JobStore<T> {
+    pub fn new(alias: String) -> JobStore<T> {
         JobStore {
             alias: alias.clone(),
-            jobs: HashMap::new()
+            jobs: HashMap::new(),
         }
     }
     pub fn start(&mut self) {
@@ -42,26 +43,26 @@ impl<T: Work> JobStore<T> {
     }
 
     pub fn add_job(&mut self, job: T, alias: String, executor: String) {
-        self.jobs.entry(alias).or_insert(MemoryJob::new(job, executor));
+        self.jobs
+            .entry(alias)
+            .or_insert(MemoryJob::new(job, executor));
     }
 
     pub fn remove_job(&mut self, alias: &String) {
         self.jobs.remove(alias);
     }
 
-    pub fn getDueJobs(&mut self) -> Vec<Job<T>> {
-        let mut ready: Vec<Job<T>> = Vec::new();
+    pub fn get_due_jobs(&mut self) -> Vec<&Job<T>> {
+        let mut ready = Vec::new();
         for (key, value) in &self.jobs {
-            let start = SystemTime::now().duration_since(UNIX_EPOCH).expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
+            let start = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
             let now = start.as_millis();
 
-            if  value.start_time <= now {
-                let cpy = value.job.clone();
-                match Arc::try_unwrap(cpy) {
-                    Ok(v) => ready.push(v),
-                    Err(_) => ()
-                }
-            } 
+            if value.start_time <= now {
+                ready.push(&value.job);
+            }
         }
 
         ready

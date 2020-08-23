@@ -1,5 +1,4 @@
 use crate::job::{Status, Work};
-use crate::scheduler::blocking_scheduler::Scheduler;
 
 pub struct Executor {
     alias: String,
@@ -15,7 +14,7 @@ impl Executor {
     }
 
     pub async fn execute(&self, job: &impl Work) -> Status {
-       job.func().await
+        job.func().await
     }
 
     pub fn shutdown(&self) {
