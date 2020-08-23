@@ -1,8 +1,26 @@
-use std::time::SystemTime;
+use async_trait::async_trait;
 
-pub struct Job {
-    name: String,
-    datetime: SystemTime,
-    func: Box<Fn() -> ()>,
+pub enum Status {
+    Success,
+    Retry,
+    Failure,
 }
-impl Job {}
+
+pub struct Job<T: Work> {
+    pub executor: String,
+    pub job: T
+}
+
+impl<T: Work> Job<T> {
+    pub fn new(job: T, alias: String) -> Job<T>{
+        Job {
+            job, 
+            executor: alias
+        }
+    }
+}
+
+#[async_trait]
+pub trait Work {
+   async fn func(&self) -> Status;
+}
