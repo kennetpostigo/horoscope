@@ -1,5 +1,8 @@
 use crate::job_store::memory_job_store::JobState;
 
+#[derive(Clone, Debug)]
 pub struct Event {
-  job_state: JobState,
+  pub job_state: JobState,
+  pub job_id: Option<String>,
+  pub executed_at: Option<u128>
 }

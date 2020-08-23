@@ -1,5 +1,6 @@
 use crate::job::{Status, Work};
 
+#[derive(Clone, Debug)]
 pub struct Executor {
     alias: String,
 }
