@@ -8,7 +8,6 @@ use crate::executor::Executor;
 use crate::job::{Status, Work};
 use crate::job_store::memory_job_store::JobStore;
 use crate::scheduler::blocking_scheduler::Scheduler;
-use async_std::task;
 use async_trait::async_trait;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -88,5 +87,6 @@ async fn main() {
         0,
         start_time,
     );
+    
     scheduler.start().await;
 }

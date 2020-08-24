@@ -1,6 +1,6 @@
 // use crate::event::Event;
 use crate::executor::Executor;
-use crate::job::{Status, Work};
+use crate::job::Work;
 use crate::job_store::memory_job_store::JobStore;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -49,11 +49,11 @@ impl<T: Work + Clone> Scheduler<T> {
                     let executioner = self.executors.get(&to_execute.executor);
                     match executioner {
                         None => {
-                            Status::Failure;
+                            return;
                         }
                         Some(e) => {
-                            getElapsedTime(to_execute.start_time);
-
+                            // Only when measuring: 
+                            // getElapsedTime(to_execute.start_time);
                             e.execute(&to_execute.job).await;
                             value.remove_job(&to_execute.alias);
                         }
