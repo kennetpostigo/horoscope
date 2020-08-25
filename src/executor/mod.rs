@@ -14,7 +14,7 @@ impl Executor {
         println!(":: Starting Executor {}::", self.alias)
     }
 
-    pub async fn execute(&self, job: &impl Work) -> Status {
+    pub async fn execute(&self, job: &Box<dyn Work>) -> Status {
         job.func().await
     }
 

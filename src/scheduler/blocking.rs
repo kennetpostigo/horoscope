@@ -1,7 +1,7 @@
 // use crate::event::Event;
 use crate::executor::Executor;
 use crate::job::Work;
-use crate::job_store::memory_job_store::JobStore;
+use crate::job_store::memory::JobStore;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -12,7 +12,7 @@ pub enum SchedulerState {
     Stopped,
 }
 
-fn getElapsedTime(start_time: u128) {
+fn get_elapsed_time(start_time: u128) {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
@@ -21,15 +21,15 @@ fn getElapsedTime(start_time: u128) {
 }
 
 #[derive(Clone, Debug)]
-pub struct Scheduler<T: Work + Clone> {
-    pub job_stores: HashMap<String, JobStore<T>>,
+pub struct Scheduler {
+    pub job_stores: HashMap<String, JobStore>,
     pub executors: HashMap<String, Executor>,
     // pub listeners: Vec<Arc<Fn(Event) -> ()>>,
     pub state: SchedulerState,
 }
 
-impl<T: Work + Clone> Scheduler<T> {
-    pub fn new() -> Scheduler<T> {
+impl Scheduler {
+    pub fn new() -> Scheduler {
         println!(":: Scheduler starting up ::");
         Scheduler {
             executors: HashMap::new(),
@@ -52,8 +52,8 @@ impl<T: Work + Clone> Scheduler<T> {
                             return;
                         }
                         Some(e) => {
-                            // Only when measuring: 
-                            // getElapsedTime(to_execute.start_time);
+                            // Only when measuring:
+                            // get_elapsed_time(to_execute.start_time);
                             e.execute(&to_execute.job).await;
                             value.remove_job(&to_execute.alias);
                         }
@@ -63,7 +63,7 @@ impl<T: Work + Clone> Scheduler<T> {
         }
     }
 
-    pub fn add_job_store(&mut self, mut job_store: JobStore<T>, alias: String) {
+    pub fn add_job_store(&mut self, mut job_store: JobStore, alias: String) {
         job_store.start();
         self.job_stores.entry(alias).or_insert(job_store);
     }
@@ -72,9 +72,9 @@ impl<T: Work + Clone> Scheduler<T> {
         &mut self,
         store_alias: String,
         alias: String,
-        job: T,
+        job: Box<dyn Work>,
         executor: String,
-        recurring: i128,
+        recurring: u128,
         until_success: i32,
         start_time: u128,
     ) {

@@ -1,4 +1,4 @@
-use crate::job_store::memory_job_store::JobState;
+use crate::job_store::JobState;
 
 #[derive(Clone, Debug)]
 pub struct Event {
