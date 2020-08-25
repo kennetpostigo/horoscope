@@ -82,7 +82,6 @@ impl Scheduler {
         match store {
             Some(r) => {
                 r.add_job(job, alias, executor, recurring, until_success, start_time);
-                return;
             }
             None => println!("Nothing"),
         }

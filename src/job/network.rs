@@ -37,9 +37,9 @@ impl Work for NetworkJob {
             NetType::Get => match surf::get(&self.url).recv_string().await {
                 Ok(msg) => {
                     print!("{}", msg);
-                    return Status::Success;
+                     Status::Success
                 }
-                Err(_) => return Status::Failure,
+                Err(_) => Status::Failure,
             },
             NetType::Post => {
                 let data = serde_json::json!({ "name": "chashu" });
