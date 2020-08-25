@@ -1,17 +1,17 @@
 use async_trait::async_trait;
 use std::collections::HashMap;
 
+// use crate::event::Event;
 use crate::executor::Executor;
 use crate::job::Work;
-use crate::scheduler::Schedule;
-use crate::scheduler::SchedulerState;
+use crate::scheduler::{Schedule, SchedulerState};
 use crate::store::{Ledger, Store};
 
 #[derive(Clone, Debug)]
 pub struct Scheduler {
     pub job_stores: HashMap<String, Store>,
     pub executors: HashMap<String, Executor>,
-    // pub listeners: Vec<Arc<Fn(Event) -> ()>>,
+    // pub listeners: Vec<Box<Fn(Event) -> ()>>,
     pub state: SchedulerState,
 }
 
