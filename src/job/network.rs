@@ -10,16 +10,16 @@ pub enum NetType {
 }
 
 #[derive(Clone, Debug)]
-pub struct NetworkJob {
+pub struct Job {
     pub alias: String,
     pub url: String,
     pub method: NetType,
     pub body: Option<Value>,
 }
 
-impl NetworkJob {
+impl Job {
     pub fn new(alias: String, url: String, method: NetType, body: Option<Value>) -> Self {
-        NetworkJob {
+        Job {
             alias,
             url,
             method,
@@ -29,7 +29,7 @@ impl NetworkJob {
 }
 
 #[async_trait]
-impl Work for NetworkJob {
+impl Work for Job {
     async fn startup(&self) {
         println!("Starting Network Job: {}", self.alias);
     }

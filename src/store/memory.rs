@@ -5,22 +5,22 @@ use crate::job::{Job, Work};
 use crate::store::Ledger;
 
 #[derive(Clone, Debug)]
-pub struct MemoryStore {
+pub struct Store {
     pub alias: String,
     pub jobs: HashMap<String, Job>,
     // logger
 }
 
-impl MemoryStore {
+impl Store {
     pub fn new(alias: String) -> Self {
-        MemoryStore {
+        Store {
             alias: alias.clone(),
             jobs: HashMap::new(),
         }
     }
 }
 
-impl Ledger for MemoryStore {
+impl Ledger for Store {
     fn start(&mut self) {
         println!(":: Starting JobStore {} ::", self.alias)
     }

@@ -7,10 +7,11 @@ pub mod store;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
-use crate::job::network::{NetType, NetworkJob};
+use crate::job::network::{NetType, Job};
 use crate::scheduler::blocking::Scheduler;
+use crate::store::memory::Store;
+//TODO: Figure out how to get rid of this trait
 use crate::scheduler::Schedule;
-use crate::store::memory::MemoryStore;
 
 #[async_std::main]
 async fn main() {
@@ -23,9 +24,9 @@ async fn main() {
         start_time
     };
 
-    let store = MemoryStore::new(String::from("jobStore-test"));
+    let store = Store::new(String::from("jobStore-test"));
     let exec = Executor::new(String::from("executor-test"));
-    let njob = NetworkJob::new(
+    let njob = Job::new(
         String::from("job-1"),
         String::from("https://ping.me/"),
         NetType::Get,
