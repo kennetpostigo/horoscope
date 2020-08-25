@@ -42,23 +42,35 @@ impl Work for Job {
                 }
                 Err(_) => Status::Failure,
             },
-            NetType::Post => {
-                let data = serde_json::json!(&self.body);
-                match http_types::Body::from_json(&data) {
-                    Ok(bdy) => {
-                        let res = surf::post(&self.url).body(bdy).await;
+            NetType::Post => match &self.body {
+                Some(bdy) => {
+                    let data = serde_json::json!(bdy);
+                    match http_types::Body::from_json(&data) {
+                        Ok(bdy) => {
+                            let res = surf::post(&self.url).body(bdy).await;
 
-                        match res {
-                            Ok(r) => {
-                                println!("{}", r.status());
-                                Status::Success
+                            match res {
+                                Ok(r) => {
+                                    println!("{}", r.status());
+                                    Status::Success
+                                }
+                                Err(_) => Status::Failure,
                             }
-                            Err(_) => Status::Failure,
                         }
+                        Err(_) => Status::Failure,
                     }
-                    Err(_) => Status::Failure,
                 }
-            }
+                None => {
+                    let res = surf::post(&self.url).await;
+                    match res {
+                        Ok(r) => {
+                            println!("{}", r.status());
+                            Status::Success
+                        }
+                        Err(_) => Status::Failure,
+                    }
+                }
+            },
         }
     }
 
