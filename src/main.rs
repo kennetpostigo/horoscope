@@ -8,7 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
-use crate::scheduler::blocking::Scheduler;
+use crate::scheduler::{background, blocking};
 use crate::store::memory::Store;
 //TODO: Figure out how to get rid of this trait
 use crate::scheduler::Schedule;
@@ -33,10 +33,10 @@ async fn main() {
         None,
     );
 
-    let mut bscheduler = Scheduler::new();
-    bscheduler.add_store(Box::new(store), String::from("jobStore-test"));
-    bscheduler.add_executor(exec, String::from("executor-test"));
-    bscheduler.add_job(
+    let mut blk_scheduler = blocking::Scheduler::new();
+    blk_scheduler.add_store(Box::new(store), String::from("jobStore-test"));
+    blk_scheduler.add_executor(exec, String::from("executor-test"));
+    blk_scheduler.add_job(
         String::from("jobStore-test"),
         String::from("job-1"),
         Box::new(njob),
@@ -46,6 +46,9 @@ async fn main() {
         start_time,
     );
 
-    bscheduler.startup().await;
+    let mut bg_scheduler = background::Scheduler::new(Box::new(blk_scheduler));
+
+    bg_scheduler.startup();
+
     println!("TEST");
 }

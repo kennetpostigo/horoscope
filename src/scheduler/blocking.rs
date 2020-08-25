@@ -28,7 +28,10 @@ impl Scheduler {
 
 #[async_trait]
 impl Schedule for Scheduler {
-    async fn startup(&mut self) {
+    fn startup(&mut self) {
+        println!("Blocking Scheduler doesn't utilize a sync startup");
+    }
+    async fn async_startup(&mut self) {
         println!(":: Scheduler starting up ::");
         self.state = SchedulerState::Running;
         loop {
@@ -100,5 +103,9 @@ impl Schedule for Scheduler {
     fn remove_executor(&mut self, alias: &String) {
         self.executors.remove(alias);
         return;
+    }
+
+    fn vclone(&self) -> Box<dyn Schedule> {
+        Box::new(self.clone())
     }
 }

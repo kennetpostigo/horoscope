@@ -28,7 +28,9 @@ pub trait Schedule
 where
     Self: Send + Sync,
 {
-    async fn startup(&mut self);
+    fn startup(&mut self);
+
+    async fn async_startup(&mut self);
 
     fn add_store(&mut self, job_store: Box<dyn Ledger>, alias: String);
 
@@ -48,6 +50,8 @@ where
     fn remove_store(&mut self, alias: &String);
 
     fn remove_job(&mut self, alias: String, job_alias: String);
-    
+
     fn remove_executor(&mut self, alias: &String);
+
+    fn vclone(&self) -> Box<dyn Schedule>;
 }
