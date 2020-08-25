@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use serde_json::Value;
 
 use crate::job::{Status, Work};
 
@@ -14,11 +13,11 @@ pub struct Job {
     pub alias: String,
     pub url: String,
     pub method: NetType,
-    pub body: Option<Value>,
+    pub body: Option<String>,
 }
 
 impl Job {
-    pub fn new(alias: String, url: String, method: NetType, body: Option<Value>) -> Self {
+    pub fn new(alias: String, url: String, method: NetType, body: Option<String>) -> Self {
         Job {
             alias,
             url,
@@ -44,7 +43,7 @@ impl Work for Job {
                 Err(_) => Status::Failure,
             },
             NetType::Post => {
-                let data = serde_json::json!({ "name": "chashu" });
+                let data = serde_json::json!(&self.body);
                 match http_types::Body::from_json(&data) {
                     Ok(bdy) => {
                         let res = surf::post(&self.url).body(bdy).await;
