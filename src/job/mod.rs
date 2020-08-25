@@ -2,7 +2,7 @@ pub mod cron;
 pub mod network;
 
 use async_trait::async_trait;
-use std::fmt::Debug; 
+use std::fmt::Debug;
 
 #[derive(Clone, Debug)]
 pub enum Status {
@@ -12,7 +12,10 @@ pub enum Status {
 }
 
 #[async_trait]
-pub trait Work {
+pub trait Work
+where
+    Self: Send + Sync,
+{
     async fn startup(&self);
     async fn func(&self) -> Status;
     async fn teardown(&self);
@@ -27,6 +30,28 @@ pub struct Job {
     pub start_time: u128,
     pub job: Box<dyn Work>,
 }
+
+impl Job {
+    // TODO: figure out how to default recurring to 0
+    pub fn new(
+        job: Box<dyn Work>,
+        alias: String,
+        executor: String,
+        recurring: u128,
+        until_success: i32,
+        start_time: u128,
+    ) -> Job {
+        Job {
+            job,
+            alias,
+            recurring,
+            until_success,
+            executor,
+            start_time,
+        }
+    }
+}
+
 
 impl Clone for Job {
     fn clone(&self) -> Self {
@@ -51,27 +76,5 @@ impl Debug for Job {
             .field("start_time", &self.start_time)
             .field("job", &"<job>")
             .finish()
-    }
-}
-
-impl Job {
-    // TODO: figure out how to default recurring to 0
-    pub fn new(
-        job: Box<dyn Work>,
-        alias: String,
-        executor: String,
-        recurring: u128,
-        until_success: i32,
-        start_time: u128
-
-    ) -> Job {
-        Job {
-            job,
-            alias,
-            recurring,
-            until_success,
-            executor,
-            start_time
-        }
     }
 }

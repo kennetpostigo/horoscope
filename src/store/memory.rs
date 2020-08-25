@@ -1,29 +1,35 @@
-use crate::job::{Job, Work};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::job::{Job, Work};
+use crate::store::Ledger;
+
 #[derive(Clone, Debug)]
-pub struct JobStore {
+pub struct MemoryStore {
     pub alias: String,
     pub jobs: HashMap<String, Job>,
     // logger
 }
-impl JobStore {
-    pub fn new(alias: String) -> JobStore {
-        JobStore {
+
+impl MemoryStore {
+    pub fn new(alias: String) -> Self {
+        MemoryStore {
             alias: alias.clone(),
             jobs: HashMap::new(),
         }
     }
-    pub fn start(&mut self) {
+}
+
+impl Ledger for MemoryStore {
+    fn start(&mut self) {
         println!(":: Starting JobStore {} ::", self.alias)
     }
 
-    pub fn shutdown(&self) {
+    fn teardown(&self) {
         println!(":: Shutting down JobStore {} :: ", self.alias)
     }
 
-    pub fn add_job(
+    fn add_job(
         &mut self,
         job: Box<dyn Work>,
         alias: String,
@@ -43,11 +49,11 @@ impl JobStore {
         ));
     }
 
-    pub fn remove_job(&mut self, alias: &String) {
+    fn remove_job(&mut self, alias: &String) {
         self.jobs.remove(alias);
     }
 
-    pub fn get_due_jobs(&mut self) -> Vec<&Job> {
+    fn get_due_jobs(&mut self) -> Vec<&Job> {
         let mut ready = Vec::new();
         for (_key, value) in &self.jobs {
             let start = SystemTime::now()
@@ -61,5 +67,9 @@ impl JobStore {
         }
 
         ready
+    }
+
+    fn vclone(&self) -> Box<dyn Ledger> {
+        Box::new(self.clone())
     }
 }

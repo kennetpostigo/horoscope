@@ -1,36 +1,22 @@
-// use crate::event::Event;
+use async_trait::async_trait;
+use std::collections::HashMap;
+
 use crate::executor::Executor;
 use crate::job::Work;
-use crate::job_store::memory::JobStore;
-use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
-
-#[derive(Clone, Debug)]
-pub enum SchedulerState {
-    Uninitialized,
-    Running,
-    Stopped,
-}
-
-fn get_elapsed_time(start_time: u128) {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
-
-    println!("{}", now.as_nanos() - start_time * 1000000);
-}
+use crate::scheduler::Schedule;
+use crate::scheduler::SchedulerState;
+use crate::store::{Ledger, Store};
 
 #[derive(Clone, Debug)]
 pub struct Scheduler {
-    pub job_stores: HashMap<String, JobStore>,
+    pub job_stores: HashMap<String, Store>,
     pub executors: HashMap<String, Executor>,
     // pub listeners: Vec<Arc<Fn(Event) -> ()>>,
     pub state: SchedulerState,
 }
 
 impl Scheduler {
-    pub fn new() -> Scheduler {
-        println!(":: Scheduler starting up ::");
+    pub fn new() -> Self {
         Scheduler {
             executors: HashMap::new(),
             job_stores: HashMap::new(),
@@ -38,13 +24,17 @@ impl Scheduler {
             state: SchedulerState::Uninitialized,
         }
     }
+}
 
-    pub async fn start(&mut self) {
+#[async_trait]
+impl Schedule for Scheduler {
+    async fn startup(&mut self) {
+        println!(":: Scheduler starting up ::");
         self.state = SchedulerState::Running;
         loop {
             for (_key, value) in &mut self.job_stores {
                 let cpy = &mut value.clone();
-                let ready = cpy.get_due_jobs();
+                let ready = cpy.store.get_due_jobs();
                 for to_execute in ready {
                     let executioner = self.executors.get(&to_execute.executor);
                     match executioner {
@@ -55,7 +45,7 @@ impl Scheduler {
                             // Only when measuring:
                             // get_elapsed_time(to_execute.start_time);
                             e.execute(&to_execute.job).await;
-                            value.remove_job(&to_execute.alias);
+                            value.store.remove_job(&to_execute.alias);
                         }
                     };
                 }
@@ -63,12 +53,13 @@ impl Scheduler {
         }
     }
 
-    pub fn add_job_store(&mut self, mut job_store: JobStore, alias: String) {
-        job_store.start();
-        self.job_stores.entry(alias).or_insert(job_store);
+    fn add_store(&mut self, job_store: Box<dyn Ledger>, alias: String) {
+        let mut store = Store::new(job_store, alias.clone());
+        store.store.start();
+        self.job_stores.entry(alias).or_insert(store);
     }
 
-    pub fn add_job(
+    fn add_job(
         &mut self,
         store_alias: String,
         alias: String,
@@ -81,31 +72,31 @@ impl Scheduler {
         let store = self.job_stores.get_mut(&store_alias);
         match store {
             Some(r) => {
-                r.add_job(job, alias, executor, recurring, until_success, start_time);
+                r.store.add_job(job, alias, executor, recurring, until_success, start_time);
             }
             None => println!("Nothing"),
         }
     }
 
-    pub fn add_executor(&mut self, executor: Executor, alias: String) {
+    fn add_executor(&mut self, executor: Executor, alias: String) {
         executor.start();
         self.executors.entry(alias).or_insert(executor);
     }
 
-    pub fn remove_job_store(&mut self, alias: &String) {
+    fn remove_store(&mut self, alias: &String) {
         self.job_stores.remove(alias);
         return;
     }
 
-    pub fn remove_job(&mut self, alias: String, job_alias: String) {
+    fn remove_job(&mut self, alias: String, job_alias: String) {
         let store = self.job_stores.get_mut(&alias);
         match store {
-            Some(s) => s.remove_job(&job_alias),
+            Some(s) => s.store.remove_job(&job_alias),
             None => (),
         }
     }
 
-    pub fn remove_executor(&mut self, alias: &String) {
+    fn remove_executor(&mut self, alias: &String) {
         self.executors.remove(alias);
         return;
     }

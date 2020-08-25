@@ -1,4 +1,6 @@
 use async_trait::async_trait;
+use serde_json::Value;
+
 use crate::job::{Status, Work};
 
 #[derive(Clone, Debug)]
@@ -12,24 +14,24 @@ pub struct NetworkJob {
     pub alias: String,
     pub url: String,
     pub method: NetType,
-    pub body: Option<String>,
+    pub body: Option<Value>,
 }
 
-impl NetworkJob{
-  pub fn new (alias: String, url: String, method: NetType, body: Option<String>) -> NetworkJob {
-    NetworkJob {
-      alias,
-      url,
-      method,
-      body
+impl NetworkJob {
+    pub fn new(alias: String, url: String, method: NetType, body: Option<Value>) -> Self {
+        NetworkJob {
+            alias,
+            url,
+            method,
+            body,
+        }
     }
-  }
 }
 
 #[async_trait]
 impl Work for NetworkJob {
-    async fn startup (&self) {
-      println!("Starting Network Job: {}", self.alias);
+    async fn startup(&self) {
+        println!("Starting Network Job: {}", self.alias);
     }
 
     async fn func(&self) -> Status {
@@ -37,7 +39,7 @@ impl Work for NetworkJob {
             NetType::Get => match surf::get(&self.url).recv_string().await {
                 Ok(msg) => {
                     print!("{}", msg);
-                     Status::Success
+                    Status::Success
                 }
                 Err(_) => Status::Failure,
             },
@@ -62,7 +64,7 @@ impl Work for NetworkJob {
     }
 
     async fn teardown(&self) {
-      println!("Tearing down Network Job: {}", self.alias);
+        println!("Tearing down Network Job: {}", self.alias);
     }
 
     fn vclone(&self) -> Box<dyn Work> {
