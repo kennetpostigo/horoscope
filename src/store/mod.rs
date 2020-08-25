@@ -16,6 +16,7 @@ where
     Self: Send + Sync,
 {
     fn start(&mut self);
+
     fn add_job(
         &mut self,
         job: Box<dyn Work>,
@@ -25,9 +26,13 @@ where
         until_success: i32,
         start_time: u128,
     );
+
     fn remove_job(&mut self, alias: &String);
+
     fn get_due_jobs(&mut self) -> Vec<&Job>;
+
     fn teardown(&self);
+    
     fn vclone(&self) -> Box<dyn Ledger>;
 }
 

@@ -72,7 +72,8 @@ impl Schedule for Scheduler {
         let store = self.job_stores.get_mut(&store_alias);
         match store {
             Some(r) => {
-                r.store.add_job(job, alias, executor, recurring, until_success, start_time);
+                r.store
+                    .add_job(job, alias, executor, recurring, until_success, start_time);
             }
             None => println!("Nothing"),
         }

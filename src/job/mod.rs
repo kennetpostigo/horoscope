@@ -17,8 +17,11 @@ where
     Self: Send + Sync,
 {
     async fn startup(&self);
+
     async fn func(&self) -> Status;
+
     async fn teardown(&self);
+    
     fn vclone(&self) -> Box<dyn Work>;
 }
 
@@ -51,7 +54,6 @@ impl Job {
         }
     }
 }
-
 
 impl Clone for Job {
     fn clone(&self) -> Self {

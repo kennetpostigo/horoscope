@@ -7,7 +7,7 @@ pub mod store;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
-use crate::job::network::{NetType, Job};
+use crate::job::network::{Job, NetType};
 use crate::scheduler::blocking::Scheduler;
 use crate::store::memory::Store;
 //TODO: Figure out how to get rid of this trait
