@@ -8,9 +8,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
+use crate::scheduler::Schedule;
 use crate::scheduler::{blocking, daemon, Msg};
 use crate::store::memory::Store;
-use crate::scheduler::Schedule;
 
 #[async_std::main]
 async fn main() {
@@ -33,16 +33,22 @@ async fn main() {
     );
 
     let mut blk_scheduler = blocking::Scheduler::new();
-    blk_scheduler.add_store(String::from("jobStore-test"), Box::new(store)).unwrap();
-    blk_scheduler.add_executor(String::from("executor-test"), exec).unwrap();
-    blk_scheduler.add_job(
-        String::from("job-1"),
-        String::from("jobStore-test"),
-        String::from("executor-test"),
-        start_time,
-        None,
-        Box::new(njob),
-    ).unwrap();
+    blk_scheduler
+        .add_store(String::from("jobStore-test"), Box::new(store))
+        .unwrap();
+    blk_scheduler
+        .add_executor(String::from("executor-test"), exec)
+        .unwrap();
+    blk_scheduler
+        .add_job(
+            String::from("job-1"),
+            String::from("jobStore-test"),
+            String::from("executor-test"),
+            start_time,
+            None,
+            Box::new(njob),
+        )
+        .unwrap();
 
     let (sender, _reader) = daemon(Box::new(blk_scheduler));
 

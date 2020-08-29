@@ -89,7 +89,6 @@ impl Job {
     }
 }
 
-
 impl Clone for Job {
     fn clone(&self) -> Self {
         Job {

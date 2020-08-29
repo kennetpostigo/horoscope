@@ -26,7 +26,7 @@ impl Executor {
         }
     }
 
-    pub fn teardown(&self) -> Result<(), String>{
+    pub fn teardown(&self) -> Result<(), String> {
         println!(":: Shutting down Executor {} ::", self.alias);
         Ok(())
     }
