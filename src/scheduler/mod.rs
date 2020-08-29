@@ -2,10 +2,13 @@ pub mod blocking;
 
 use async_channel;
 use async_channel::{Receiver, Sender};
+use async_std::prelude::*;
+use async_std::stream;
 use async_std::task;
 use async_trait::async_trait;
+use futures::{select, FutureExt};
 use std::fmt;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::Work;
@@ -69,12 +72,29 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
     let mut schdlr = scheduler;
     let (s, r) = async_channel::unbounded();
     let (s_cpy, r_cpy) = (s.clone(), r.clone());
+    let mut interval = stream::interval(Duration::from_micros(50));
 
     task::spawn(async move {
         let sender = s_cpy;
         let reader = r_cpy;
-        schdlr.init(sender, reader);
-        schdlr.startup().await
+        schdlr.startup();
+        loop {
+            select! {
+                m = reader.recv().fuse() => {
+                    println!("Msg is being proxied");
+                    match m {
+                        Ok(msg) => schdlr.proxy(msg, &sender, &reader),
+                        Err(e) => println!("{}", e)
+                    }
+                },
+                i = interval.next().fuse() => {
+                    match i {
+                        Some(_) => schdlr.check_jobs().await,
+                        None => println!("Nothing in innterval hit")
+                    }
+                }
+            };
+        }
     });
     (s, r)
 }
@@ -84,9 +104,11 @@ pub trait Schedule
 where
     Self: Send + Sync,
 {
-    fn init(&mut self, sender: Sender<Msg>, reader: Receiver<Msg>);
+    fn proxy(&mut self, msg: Msg, sender: &Sender<Msg>, reader: &Receiver<Msg>);
 
-    async fn startup(&mut self);
+    fn startup(&mut self);
+
+    async fn check_jobs(&mut self);
 
     fn add_store(&mut self, alias: String, store: Box<dyn Ledger>) -> Result<(), String>;
 

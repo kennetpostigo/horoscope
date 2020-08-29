@@ -4,12 +4,12 @@ pub mod job;
 pub mod scheduler;
 pub mod store;
 
-use std::time::{SystemTime, UNIX_EPOCH};
+use async_std::task;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
-use crate::scheduler::Schedule;
-use crate::scheduler::{blocking, daemon, Msg};
+use crate::scheduler::{Schedule, blocking, daemon, Msg};
 use crate::store::memory::Store;
 
 #[async_std::main]
@@ -33,6 +33,7 @@ async fn main() {
     );
 
     let mut blk_scheduler = blocking::Scheduler::new();
+
     blk_scheduler
         .add_store(String::from("jobStore-test"), Box::new(store))
         .unwrap();
@@ -65,27 +66,30 @@ async fn main() {
         Ok(_u) => println!("Message Sent!"),
         Err(err) => println!("Err: {}", err),
     };
-    // sender.send(Msg::RemoveExecuter("trigger"));
 
-    // sender.send(Msg::AddStore("store"));
-    // sender.send(Msg::ModifyStore("store"));
-    // sender.send(Msg::RemoveStore("store"));
-
-    // sender.send(Msg::AddJob(
-    //     "alias",
-    //     "trigger",
-    //     "start_time",
-    //     "end_time",
-    //     "job",
-    // ));
-    // sender.send(Msg::ModifyJob("store", "alias", "properties"));
-    // sender.send(Msg::AddRemoveJob("store", "alias"));
-    // sender.send(Msg::AddPauseJob("store", "alias"));
-    // sender.send(Msg::AddResumeJob("store", "alias"));
-
-    // sender.send(Msg::AddListener("alias", "callback", "filter"));
-    // sender.send(Msg::RemoveListener("alias"));
+    // sender
+    //     .send(Msg::AddStore(
+    //         String::from("jobStore-test"),
+    //         Box::new(store),
+    //     ))
+    //     .await
+    //     .unwrap();
+    // sender
+    //     .send(Msg::AddExecutor(String::from("executor-test"), exec))
+    //     .await
+    //     .unwrap();
+    // sender
+    //     .send(Msg::AddJob(
+    //         String::from("job-1"),
+    //         String::from("jobStore-test"),
+    //         String::from("executor-test"),
+    //         start_time,
+    //         None,
+    //         Box::new(njob),
+    //     ))
+    //     .await
+    //     .unwrap();
 
     println!("TEST");
-    std::thread::sleep_ms(30000)
+    task::sleep(Duration::from_secs(30)).await;
 }

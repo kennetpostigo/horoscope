@@ -1,11 +1,9 @@
 use async_channel::{Receiver, Sender};
-use async_std::task;
 use async_trait::async_trait;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-// use crate::event::Event;
 // use crate::event::Event;
 use crate::executor::Executor;
 use crate::job::Work;
@@ -35,76 +33,99 @@ impl Scheduler {
 
 #[async_trait]
 impl Schedule for Scheduler {
-    fn init(&mut self, _sender: Sender<Msg>, reader: Receiver<Msg>) {
-        let mut schdlr = self.clone();
-        task::spawn(async move {
-            while let Ok(msg) = reader.recv().await {
-                match msg {
-                    Msg::AddExecutor(alias, exctr) => schdlr.add_executor(alias, exctr),
-                    Msg::RemoveExecutor(alias) => schdlr.remove_executor(&alias),
-                    Msg::AddStore(alias, store) => schdlr.add_store(alias, store),
-                    // TODO: Implement Modify Store
-                    // Msg::ModifyStore(alias, properties) => scheduler.modify_store(alias, properties),
-                    Msg::RemoveStore(alias) => schdlr.remove_store(&alias),
-                    Msg::AddJob(alias, store_alias, executor, start_time, end_time, job) => {
-                        schdlr.add_job(alias, store_alias, executor, start_time, end_time, job)
-                    }
-                    // TODO: Implement ModifyJob
-                    Msg::ModifyJob(alias, store_alias) => schdlr.modify_job(alias, store_alias),
-                    Msg::RemoveJob(alias, store_alias) => schdlr.remove_job(alias, store_alias),
-                    // TODO: Implement Pause Job
-                    Msg::PauseJob(alias, store_alias) => schdlr.pause_job(alias, store_alias),
-                    // TODO: Implement Resume Job
-                    Msg::ResumeJob(alias, store_alias) => schdlr.resume_job(alias, store_alias),
-                    Msg::Log(id, _status, _result) => {
-                        println!("Hello {}", id);
-                        Ok(())
-                    }
-                };
-            }
-        });
-    }
-
-    async fn startup(&mut self) {
+    fn startup(&mut self) {
         println!(":: Scheduler starting up ::");
         self.state = SchedulerState::Running;
         println!("State of the scheduler {}", &self.state);
-        loop {
-            for (_key, value) in &mut self.stores {
-                let cpy = &mut value.clone();
-                match cpy.store.get_due_jobs() {
-                    Ok(ready) => {
-                        for to_execute in ready {
-                            let executioner = self.executors.get(&to_execute.executor);
-                            match executioner {
-                                None => println!("NOTHING GOING ON"),
-                                Some(e) => {
-                                    // Only when measuring:
-                                    // get_elapsed_time(to_execute.start_time);
-                                    // TODO: Check Triggers
-                                    match (e.execute(&to_execute.job).await) {
-                                        Ok(_v) => println!("execute job v: {}", &to_execute.alias),
-                                        Err(e) => println!("execute job e: {}", e),
-                                    };
+    }
 
-                                    // for listener in &self.listeners {
-                                    //     listener.set("job id", "job status", "job event");
-                                    // }
-
-                                    // TODO: Check next
-                                    match value.store.remove_job(&to_execute.alias) {
-                                        Ok(_v) => println!("remove job v: {}", &to_execute.alias),
-                                        Err(e) => println!("remove job e: {}", e),
-                                    };
-                                }
-                            };
-                        }
-                    }
-                    Err(_e) => println!(
-                        "Failed to get jobs that are ready to execute for Store {}",
-                        &cpy.alias
-                    ),
+    fn proxy(&mut self, msg: Msg, _sender: &Sender<Msg>, _reader: &Receiver<Msg>) {
+        println!("Msg came in");
+        match msg {
+            Msg::AddExecutor(alias, exctr) => match self.add_executor(alias, exctr) {
+                Ok(_) => println!("Add Executor was fine"),
+                Err(e) => println!("{}", e),
+            },
+            Msg::RemoveExecutor(alias) => match self.remove_executor(&alias) {
+                Ok(_) => println!("Remove Executor was fine"),
+                Err(e) => println!("{}", e),
+            },
+            Msg::AddStore(alias, store) => match self.add_store(alias, store) {
+                Ok(_) => println!("Add Store was fine"),
+                Err(e) => println!("{}", e),
+            },
+            // TODO: Implement Modify Store
+            // Msg::ModifyStore(alias, properties) => scheduler.modify_store(alias, properties),
+            Msg::RemoveStore(alias) => match self.remove_store(&alias) {
+                Ok(_) => println!("Remove Store was fine"),
+                Err(e) => println!("{}", e),
+            },
+            Msg::AddJob(alias, store_alias, executor, start_time, end_time, job) => {
+                match self.add_job(alias, store_alias, executor, start_time, end_time, job) {
+                    Ok(_) => println!("Addd Job was fine"),
+                    Err(e) => println!("{}", e),
                 }
+            }
+            // TODO: Implement ModifyJob
+            Msg::ModifyJob(alias, store_alias) => match self.modify_job(alias, store_alias) {
+                Ok(_) => println!("Modify Job was fine"),
+                Err(e) => println!("{}", e),
+            },
+            Msg::RemoveJob(alias, store_alias) => match self.remove_job(alias, store_alias) {
+                Ok(_) => println!("Remove Job was fine"),
+                Err(e) => println!("{}", e),
+            },
+            // TODO: Implement Pause Job
+            Msg::PauseJob(alias, store_alias) => match self.pause_job(alias, store_alias) {
+                Ok(_) => println!("Pause Job was fine"),
+                Err(e) => println!("{}", e),
+            },
+            // TODO: Implement Resume Job
+            Msg::ResumeJob(alias, store_alias) => match self.resume_job(alias, store_alias) {
+                Ok(_) => println!("Resume Job was fine"),
+                Err(e) => println!("{}", e),
+            },
+            Msg::Log(id, _status, _result) => {
+                println!("Hello {}", id);
+            }
+        };
+    }
+
+    async fn check_jobs(&mut self) {
+        for (_key, value) in &mut self.stores {
+            let cpy = &mut value.clone();
+            match cpy.store.get_due_jobs() {
+                Ok(ready) => {
+                    for to_execute in ready {
+                        let executioner = self.executors.get(&to_execute.executor);
+                        match executioner {
+                            None => println!("NOTHING GOING ON"),
+                            Some(e) => {
+                                // Only when measuring:
+                                // get_elapsed_time(to_execute.start_time);
+                                // TODO: Check Triggers
+                                match (e.execute(&to_execute.job).await) {
+                                    Ok(_v) => println!("execute job v: {}", &to_execute.alias),
+                                    Err(e) => println!("execute job e: {}", e),
+                                };
+
+                                // for listener in &self.listeners {
+                                //     listener.set("job id", "job status", "job event");
+                                // }
+
+                                // TODO: Check next
+                                match value.store.remove_job(&to_execute.alias) {
+                                    Ok(_v) => println!("remove job v: {}", &to_execute.alias),
+                                    Err(e) => println!("remove job e: {}", e),
+                                };
+                            }
+                        };
+                    }
+                }
+                Err(_e) => println!(
+                    "Failed to get jobs that are ready to execute for Store {}",
+                    &cpy.alias
+                ),
             }
         }
     }
