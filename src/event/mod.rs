@@ -1,8 +1,18 @@
-use crate::store::JobState;
+// use crate::store::JobState;
+use std::fmt::Debug;
+pub trait Eventful
+where
+    Self: Send + Sync + Clone + Debug,
+{
+}
 
 #[derive(Clone, Debug)]
-pub struct Event where Self: Send + Sync {
-    pub job_state: JobState,
-    pub job_id: Option<String>,
-    pub executed_at: Option<u128>,
+pub struct Event
+where
+    Self: Send + Sync,
+{
+    status: String,
+    id: String,
+    time: u128, // when it occured
+                // event: Box<dyn Eventful>, // defined by type, like Job, Store, Executor, Scheduler
 }

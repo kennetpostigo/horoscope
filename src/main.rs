@@ -8,9 +8,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
-use crate::scheduler::{background, blocking};
+use crate::scheduler::{blocking, daemon, Msg};
 use crate::store::memory::Store;
-//TODO: Figure out how to get rid of this trait
 use crate::scheduler::Schedule;
 
 #[async_std::main]
@@ -34,21 +33,53 @@ async fn main() {
     );
 
     let mut blk_scheduler = blocking::Scheduler::new();
-    blk_scheduler.add_store(Box::new(store), String::from("jobStore-test"));
-    blk_scheduler.add_executor(exec, String::from("executor-test"));
+    blk_scheduler.add_store(String::from("jobStore-test"), Box::new(store)).unwrap();
+    blk_scheduler.add_executor(String::from("executor-test"), exec).unwrap();
     blk_scheduler.add_job(
-        String::from("jobStore-test"),
         String::from("job-1"),
-        Box::new(njob),
+        String::from("jobStore-test"),
         String::from("executor-test"),
-        0,
-        0,
         start_time,
-    );
+        None,
+        Box::new(njob),
+    ).unwrap();
 
-    let mut bg_scheduler = background::Scheduler::new(Box::new(blk_scheduler));
+    let (sender, _reader) = daemon(Box::new(blk_scheduler));
 
-    bg_scheduler.startup();
+    // sender.send(Msg::AddExecutor(String::from("trigger"), Box::new(exec)));
+
+    match sender
+        .send(Msg::Log(
+            String::from("some id"),
+            String::from("some status"),
+            String::from("some result"),
+        ))
+        .await
+    {
+        Ok(_u) => println!("Message Sent!"),
+        Err(err) => println!("Err: {}", err),
+    };
+    // sender.send(Msg::RemoveExecuter("trigger"));
+
+    // sender.send(Msg::AddStore("store"));
+    // sender.send(Msg::ModifyStore("store"));
+    // sender.send(Msg::RemoveStore("store"));
+
+    // sender.send(Msg::AddJob(
+    //     "alias",
+    //     "trigger",
+    //     "start_time",
+    //     "end_time",
+    //     "job",
+    // ));
+    // sender.send(Msg::ModifyJob("store", "alias", "properties"));
+    // sender.send(Msg::AddRemoveJob("store", "alias"));
+    // sender.send(Msg::AddPauseJob("store", "alias"));
+    // sender.send(Msg::AddResumeJob("store", "alias"));
+
+    // sender.send(Msg::AddListener("alias", "callback", "filter"));
+    // sender.send(Msg::RemoveListener("alias"));
 
     println!("TEST");
+    std::thread::sleep_ms(30000)
 }

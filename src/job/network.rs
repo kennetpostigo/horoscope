@@ -29,8 +29,9 @@ impl Job {
 
 #[async_trait]
 impl Work for Job {
-    async fn startup(&self) {
+    async fn startup(&self) -> Result<(), String> {
         println!("Starting Network Job: {}", self.alias);
+        Ok(())
     }
 
     async fn func(&self) -> Status {
@@ -40,7 +41,7 @@ impl Work for Job {
                     print!("{}", msg);
                     Status::Success
                 }
-                Err(_) => Status::Failure,
+                Err(_) => Status::Failure(String::from("Unable to complete request")),
             },
             NetType::Post => match &self.body {
                 Some(bdy) => {
@@ -54,10 +55,12 @@ impl Work for Job {
                                     println!("{}", r.status());
                                     Status::Success
                                 }
-                                Err(_) => Status::Failure,
+                                Err(_) => {
+                                    Status::Failure(String::from("Unable to complete request"))
+                                }
                             }
                         }
-                        Err(_) => Status::Failure,
+                        Err(_) => Status::Failure(String::from("Unable to parse body")),
                     }
                 }
                 None => {
@@ -67,15 +70,16 @@ impl Work for Job {
                             println!("{}", r.status());
                             Status::Success
                         }
-                        Err(_) => Status::Failure,
+                        Err(_) => Status::Failure(String::from("Unable to complete request")),
                     }
                 }
             },
         }
     }
 
-    async fn teardown(&self) {
+    async fn teardown(&self) -> Result<String, String> {
         println!("Tearing down Network Job: {}", self.alias);
+        Ok(String::from(""))
     }
 
     fn vclone(&self) -> Box<dyn Work> {

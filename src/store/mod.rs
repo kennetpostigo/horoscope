@@ -15,24 +15,35 @@ pub trait Ledger
 where
     Self: Send + Sync,
 {
-    fn start(&mut self);
+    fn start(&mut self) -> Result<(), String> {
+        println!(":: Starting JobStore ::");
+        Ok(())
+    }
 
     fn add_job(
         &mut self,
-        job: Box<dyn Work>,
         alias: String,
         executor: String,
-        recurring: u128,
-        until_success: i32,
         start_time: u128,
-    );
+        end_time: Option<u128>,
+        job: Box<dyn Work>,
+    ) -> Result<(), String>;
 
-    fn remove_job(&mut self, alias: &String);
+    fn modify_job(&mut self, alias: &String) -> Result<(), String>;
 
-    fn get_due_jobs(&mut self) -> Vec<&Job>;
+    fn pause_job(&mut self, alias: String) -> Result<(), String>;
 
-    fn teardown(&self);
-    
+    fn resume_job(&mut self, alias: String) -> Result<(), String>;
+
+    fn remove_job(&mut self, alias: &String) -> Result<(), String>;
+
+    fn get_due_jobs(&mut self) -> Result<Vec<&Job>, String>;
+
+    fn teardown(&self) -> Result<(), String> {
+        println!(":: Tearing Down JobStore ::");
+        Ok(())
+    }
+
     fn vclone(&self) -> Box<dyn Ledger>;
 }
 
@@ -42,7 +53,7 @@ pub struct Store {
 }
 
 impl Store {
-    pub fn new(store: Box<dyn Ledger>, alias: String) -> Store {
+    pub fn new(alias: String, store: Box<dyn Ledger>) -> Store {
         Store { store, alias }
     }
 }
