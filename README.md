@@ -22,7 +22,7 @@
     alt="Crates.io version" />
   </a>
   <!-- Downloads -->
-  <a href="https://crates.io/crates/async-std">
+  <a href="https://crates.io/crates/arschduler">
     <img src="https://img.shields.io/crates/d/arscheduler.svg?style=flat-square"
       alt="Download" />
   </a>
