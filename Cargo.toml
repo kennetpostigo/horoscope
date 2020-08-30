@@ -1,5 +1,5 @@
 [package]
-name = "arscheduler"
+name = "horoscope"
 version = "0.1.0"
 authors = ["Kennet Postigo <kennetfpostigo@gmail.com>", "Jonathan Beltran <jbelt021@fiu.edu>"]
 edition = "2018"

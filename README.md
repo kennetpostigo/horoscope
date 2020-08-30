@@ -1,7 +1,7 @@
 <div align="center" style="display: flex; flex: 1; align-items: center; justify-content: center;">
 <img src="./assets/logo.png" align="center" height="300px">
 </div>
-<h1 align="center">ARScheduler</h1>
+<h1 align="center">horoscope</h1>
 <div align="center">
  <strong>
    Advanced Rust Scheduler
@@ -12,22 +12,22 @@
 
 <div align="center">
    <!-- CI status -->
-  <a href="https://github.com/hyperfuse/arscheduler/actions">
-    <img src="https://github.com/hyperfuse-rs/arscheduler/workflows/CI/badge.svg"
+  <a href="https://github.com/hyperfuse/horoscope/actions">
+    <img src="https://github.com/hyperfuse-rs/horoscope/workflows/CI/badge.svg"
       alt="CI Status" />
   </a>
   <!-- Crates version -->
-  <a href="https://crates.io/crates/arscheduler">
-    <img src="https://img.shields.io/crates/v/arscheduler.svg?style=flat-square"
+  <a href="https://crates.io/crates/horoscope">
+    <img src="https://img.shields.io/crates/v/horoscope.svg?style=flat-square"
     alt="Crates.io version" />
   </a>
   <!-- Downloads -->
-  <a href="https://crates.io/crates/arschduler">
-    <img src="https://img.shields.io/crates/d/arscheduler.svg?style=flat-square"
+  <a href="https://crates.io/crates/horoscope">
+    <img src="https://img.shields.io/crates/d/horoscope.svg?style=flat-square"
       alt="Download" />
   </a>
   <!-- docs.rs docs -->
-  <a href="https://docs.rs/arscheduler">
+  <a href="https://docs.rs/horoscope">
     <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
       alt="docs.rs docs" />
   </a>
@@ -35,11 +35,11 @@
 
 <div align="center">
   <h3>
-    <a href="https://docs.rs/arscheduler">
+    <a href="https://docs.rs/horoscope">
       API Docs
     </a>
     <span> | </span>
-    <a href="https://github.com/hyperfuse/arscheduler/releases">
+    <a href="https://github.com/hyperfuse/horoscope/releases">
       Releases
     </a>
   </h3>
@@ -47,13 +47,13 @@
 
 <br/>
 
-This crate provides a general purpose scheduler. The ARScheduler scheduler
+This crate provides a general purpose scheduler. The horoscope scheduler
 provides functionality out the box and is easily extensible.
 
 ## Features
 
-- **Fast:** ARScheduler runs magnitudes faster than schedulers built in other
-  languages that are mainstream. stream, ARScheduler runs magnitudes faster
+- **Fast:** horoscope runs magnitudes faster than schedulers built in other
+  languages that are mainstream. stream, horoscope runs magnitudes faster
 - **Fast:** Our robust allocator and threadpool designs provide ultra-high
   throughput with predictably low latency.
 - **Intuitive:** You get a lot of powerful functionality out of the box to run
@@ -61,15 +61,15 @@ provides functionality out the box and is easily extensible.
   what you are looking for, Implement your own Job, Store, or Executor.
 - **Easy to learn:** [Detailed documentation][docs]
 
-[docs]: https://docs.rs/arscheduler
+[docs]: https://docs.rs/horoscope
 
 ## Examples
 
 ```rust
-use arscheduler::executor::Executor;
-use arscheduler::job::network::{Job, NetType};
-use arscheduler::scheduler::{Schedule, blocking, daemon, Msg};
-use arscheduler::store::memory::Store;
+use horoscope::executor::Executor;
+use horoscope::job::network::{Job, NetType};
+use horoscope::scheduler::{Schedule, blocking, daemon, Msg};
+use horoscope::store::memory::Store;
 
 fn main() {
     let store = Store::new(String::from("jobStore-test"));
@@ -107,8 +107,8 @@ fn main() {
 More examples, including networking and file access, can be found in our
 [`examples`] directory and in our [documentation].
 
-[`examples`]: https://github.com/hyperfuse/arscheduler/tree/master/examples
-[documentation]: https://docs.rs/arscheduler#examples
+[`examples`]: https://github.com/hyperfuse/horoscope/tree/master/examples
+[documentation]: https://docs.rs/horoscope#examples
 
 ## Philosophy
 
@@ -120,7 +120,7 @@ will always allow you to take over and implement to your liking.
 With [cargo add][cargo-add] installed run:
 
 ```sh
-$ cargo add arscheduler
+$ cargo add horoscope
 ```
 
 [cargo-add]: https://github.com/killercup/cargo-edit
