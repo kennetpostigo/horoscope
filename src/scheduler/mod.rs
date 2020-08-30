@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::executor::Executor;
 use crate::job::Work;
-use crate::store::Ledger;
+use crate::store::Silo;
 
 #[derive(Clone, Debug)]
 pub enum SchedulerState {
@@ -39,7 +39,7 @@ pub enum Msg {
     RemoveExecutor(String),
 
     // Store Msgs
-    AddStore(String, Box<dyn Ledger>),
+    AddStore(String, Box<dyn Silo>),
     // ModifyStore(String, String),
     RemoveStore(String),
 
@@ -110,7 +110,7 @@ where
 
     async fn check_jobs(&mut self);
 
-    fn add_store(&mut self, alias: String, store: Box<dyn Ledger>) -> Result<(), String>;
+    fn add_store(&mut self, alias: String, store: Box<dyn Silo>) -> Result<(), String>;
 
     fn add_job(
         &mut self,

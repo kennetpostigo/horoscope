@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::job::{Job, Work};
-use crate::store::Ledger;
+use crate::store::Silo;
 
 #[derive(Clone, Debug)]
 pub struct Store {
@@ -21,7 +21,7 @@ impl Store {
     }
 }
 
-impl Ledger for Store {
+impl Silo for Store {
     fn start(&mut self) -> Result<(), String> {
         println!(":: Starting JobStore {} ::", self.alias);
         Ok(())
@@ -45,6 +45,7 @@ impl Ledger for Store {
             executor,
             start_time,
             end_time,
+            HashMap::new(),
             job,
         ));
         Ok(())
@@ -102,7 +103,7 @@ impl Ledger for Store {
         Ok(ready)
     }
 
-    fn vclone(&self) -> Box<dyn Ledger> {
+    fn vclone(&self) -> Box<dyn Silo> {
         Box::new(self.clone())
     }
 }

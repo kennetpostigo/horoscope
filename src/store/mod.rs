@@ -11,7 +11,7 @@ pub enum JobState {
     Success,
     Failure,
 }
-pub trait Ledger
+pub trait Silo
 where
     Self: Send + Sync,
 {
@@ -44,16 +44,16 @@ where
         Ok(())
     }
 
-    fn vclone(&self) -> Box<dyn Ledger>;
+    fn vclone(&self) -> Box<dyn Silo>;
 }
 
 pub struct Store {
     pub alias: String,
-    pub store: Box<dyn Ledger>,
+    pub store: Box<dyn Silo>,
 }
 
 impl Store {
-    pub fn new(alias: String, store: Box<dyn Ledger>) -> Store {
+    pub fn new(alias: String, store: Box<dyn Silo>) -> Store {
         Store { store, alias }
     }
 }

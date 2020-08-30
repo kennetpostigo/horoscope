@@ -8,7 +8,7 @@ use std::fmt::Debug;
 use crate::executor::Executor;
 use crate::job::Work;
 use crate::scheduler::{Msg, Schedule, SchedulerState};
-use crate::store::{Ledger, Store};
+use crate::store::{Silo, Store};
 
 // type Listener = Box<dyn Fn(Event) -> ()>;
 
@@ -113,7 +113,9 @@ impl Schedule for Scheduler {
                                 //     listener.set("job id", "job status", "job event");
                                 // }
 
-                                // TODO: Check next
+                                // TODO: Check next only for timetrigger update 
+                                // start_time. So check the option that is 
+                                //returned to update start_time and delete if None
                                 match value.store.remove_job(&to_execute.alias) {
                                     Ok(_v) => println!("remove job v: {}", &to_execute.alias),
                                     Err(e) => println!("remove job e: {}", e),
@@ -130,7 +132,7 @@ impl Schedule for Scheduler {
         }
     }
 
-    fn add_store(&mut self, alias: String, store: Box<dyn Ledger>) -> Result<(), String> {
+    fn add_store(&mut self, alias: String, store: Box<dyn Silo>) -> Result<(), String> {
         let mut store = Store::new(alias.clone(), store);
 
         match store.store.start() {
