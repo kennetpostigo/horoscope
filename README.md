@@ -1,4 +1,6 @@
-<img src="./assets/logo.png">
+<div style="display: flex; flex: 1; align-items: center; justify-content: center;">
+<img src="./assets/logo.png" align="center" height="300px">
+</div>
 <h1 align="center">arscheduler</h1>
 <div align="center">
  <strong>
