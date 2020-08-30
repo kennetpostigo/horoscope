@@ -90,7 +90,7 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
                 i = interval.next().fuse() => {
                     match i {
                         Some(_) => schdlr.check_jobs().await,
-                        None => println!("Nothing in innterval hit")
+                        None => println!("Nothing in interval hit")
                     }
                 }
             };

@@ -3,6 +3,8 @@ pub mod network;
 
 use async_trait::async_trait;
 use std::fmt::Debug;
+use std::collections::HashMap;
+use crate::trigger::Trigger;
 
 #[derive(Clone, Debug)]
 pub enum Status {
@@ -32,25 +34,13 @@ where
     fn vclone(&self) -> Box<dyn Work>;
 }
 
-#[async_trait]
-pub trait Trigger
-where
-    Self: Send + Sync,
-{
-    async fn should_run(&self) -> bool;
-
-    async fn next(&self) -> u128;
-
-    fn vclone(&self) -> Box<dyn Trigger>;
-}
-
 pub struct Job {
     pub state: Status,
     pub alias: String,
     pub executor: String,
     pub start_time: u128,
     pub end_time: Option<u128>,
-    // TODO: pub trigger: Box<dyn Trigger>,
+    pub triggers: HashMap<String, Box<Trigger>>,
     pub job: Box<dyn Work>,
 }
 
@@ -61,6 +51,7 @@ impl Job {
         executor: String,
         start_time: u128,
         end_time: Option<u128>,
+        triggers: HashMap<String, Box<Trigger>>,
         job: Box<dyn Work>,
     ) -> Job {
         Job {
@@ -69,7 +60,7 @@ impl Job {
             executor,
             start_time,
             end_time,
-            //TODO: trigger: Box::new(Trigger)
+            triggers,
             job,
         }
     }
@@ -97,6 +88,7 @@ impl Clone for Job {
             executor: self.executor.clone(),
             start_time: self.start_time,
             end_time: self.end_time,
+            triggers: self.triggers.clone(),
             job: self.job.vclone(),
         }
     }
@@ -110,6 +102,7 @@ impl Debug for Job {
             .field("executor", &self.executor)
             .field("start_time", &self.start_time)
             .field("end_success", &self.end_time)
+            .field("triggers", &self.triggers)
             .field("job", &"<job>")
             .finish()
     }
