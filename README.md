@@ -1,7 +1,7 @@
 <div align="center" style="display: flex; flex: 1; align-items: center; justify-content: center;">
 <img src="./assets/logo.png" align="center" height="300px">
 </div>
-<h1 align="center">arscheduler</h1>
+<h1 align="center">ARscheduler</h1>
 <div align="center">
  <strong>
    Advanced Rust Scheduler
@@ -47,13 +47,13 @@
 
 <br/>
 
-This crate provides a general purpose scheduler. The arscheduler scheduler
+This crate provides a general purpose scheduler. The ARscheduler scheduler
 provides functionality out the box and is easily extensible.
 
 ## Features
 
-- **Fast:** arscheduler runs magnitudes faster than schedulers built in other
-  languages that are mainstream. stream, arscheduler runs magnitudes faster
+- **Fast:** ARscheduler runs magnitudes faster than schedulers built in other
+  languages that are mainstream. stream, ARscheduler runs magnitudes faster
 - **Fast:** Our robust allocator and threadpool designs provide ultra-high
   throughput with predictably low latency.
 - **Intuitive:** You get a lot of powerful functionality out of the box to run
