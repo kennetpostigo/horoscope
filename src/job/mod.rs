@@ -16,6 +16,19 @@ pub enum Status {
   Failure(String),
 }
 
+impl Status {
+  pub fn to_string(&self) -> String {
+    match self {
+      Status::Uninitialized => String::from("Uninitialized"),
+      Status::Running => String::from("Running"),
+      Status::Paused => String::from("Paused"),
+      Status::Retry => String::from("Retry"),
+      Status::Success => String::from("Success"),
+      Status::Failure(_) => String::from("Failure"),
+    }
+  }
+}
+
 // Time Trigger
 // Ledger Trigger
 // User-defined Trigger
@@ -23,8 +36,7 @@ pub enum Status {
 #[async_trait]
 pub trait Work
 where
-  Self: Send + Sync,
-{
+  Self: Send + Sync, {
   async fn startup(&self) -> Result<(), String>;
 
   async fn func(&self) -> Status;

@@ -2,15 +2,13 @@
 use std::fmt::Debug;
 pub trait Eventful
 where
-  Self: Send + Sync + Clone + Debug,
-{
+  Self: Send + Sync + Clone + Debug, {
 }
 
 #[derive(Clone, Debug)]
 pub struct Event
 where
-  Self: Send + Sync,
-{
+  Self: Send + Sync, {
   status: String,
   id: String,
   time: u128, // when it occured

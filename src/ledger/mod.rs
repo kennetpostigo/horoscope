@@ -1,3 +1,5 @@
+pub mod memory;
+
 use std::fmt::Debug;
 
 use crate::job::Status;
@@ -9,8 +11,7 @@ pub struct Ledger {
 
 pub trait History
 where
-  Self: Send + Sync,
-{
+  Self: Send + Sync, {
   fn insert(
     &self,
     store: &String,
@@ -18,6 +19,7 @@ where
     status: &Status,
     time: &i64,
   ) -> Result<(), String>;
+
   fn remove(
     &self,
     store: &String,
@@ -25,6 +27,7 @@ where
     status: &Status,
     time: &i64,
   ) -> Result<(), String>;
+
   fn entry(
     &self,
     store: &String,
@@ -32,6 +35,7 @@ where
     status: &Status,
     time: &i64,
   ) -> Result<Option<(String, i64)>, String>;
+
   fn vclone(&self) -> Box<dyn History>;
 }
 

@@ -13,8 +13,7 @@ pub enum JobState {
 }
 pub trait Silo
 where
-  Self: Send + Sync,
-{
+  Self: Send + Sync, {
   fn start(&mut self) -> Result<(), String> {
     println!(":: Starting JobStore ::");
     Ok(())
