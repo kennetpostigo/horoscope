@@ -39,13 +39,20 @@ impl Schedule for Scheduler {
         println!("State of the scheduler {}", &self.state);
     }
 
-    fn proxy(&mut self, msg: Msg, _sender: &Sender<Msg>, _reader: &Receiver<Msg>) {
+    fn proxy(
+        &mut self,
+        msg: Msg,
+        _sender: &Sender<Msg>,
+        _reader: &Receiver<Msg>,
+    ) {
         println!("Msg came in");
         match msg {
-            Msg::AddExecutor(alias, exctr) => match self.add_executor(alias, exctr) {
-                Ok(_) => println!("Add Executor was fine"),
-                Err(e) => println!("{}", e),
-            },
+            Msg::AddExecutor(alias, exctr) => {
+                match self.add_executor(alias, exctr) {
+                    Ok(_) => println!("Add Executor was fine"),
+                    Err(e) => println!("{}", e),
+                }
+            }
             Msg::RemoveExecutor(alias) => match self.remove_executor(&alias) {
                 Ok(_) => println!("Remove Executor was fine"),
                 Err(e) => println!("{}", e),
@@ -60,31 +67,53 @@ impl Schedule for Scheduler {
                 Ok(_) => println!("Remove Store was fine"),
                 Err(e) => println!("{}", e),
             },
-            Msg::AddJob(alias, store_alias, executor, start_time, end_time, job) => {
-                match self.add_job(alias, store_alias, executor, start_time, end_time, job) {
+            Msg::AddJob(
+                alias,
+                store_alias,
+                executor,
+                start_time,
+                end_time,
+                job,
+            ) => {
+                match self.add_job(
+                    alias,
+                    store_alias,
+                    executor,
+                    start_time,
+                    end_time,
+                    job,
+                ) {
                     Ok(_) => println!("Addd Job was fine"),
                     Err(e) => println!("{}", e),
                 }
             }
             // TODO: Implement ModifyJob
-            Msg::ModifyJob(alias, store_alias) => match self.modify_job(alias, store_alias) {
-                Ok(_) => println!("Modify Job was fine"),
-                Err(e) => println!("{}", e),
-            },
-            Msg::RemoveJob(alias, store_alias) => match self.remove_job(alias, store_alias) {
-                Ok(_) => println!("Remove Job was fine"),
-                Err(e) => println!("{}", e),
-            },
+            Msg::ModifyJob(alias, store_alias) => {
+                match self.modify_job(alias, store_alias) {
+                    Ok(_) => println!("Modify Job was fine"),
+                    Err(e) => println!("{}", e),
+                }
+            }
+            Msg::RemoveJob(alias, store_alias) => {
+                match self.remove_job(alias, store_alias) {
+                    Ok(_) => println!("Remove Job was fine"),
+                    Err(e) => println!("{}", e),
+                }
+            }
             // TODO: Implement Pause Job
-            Msg::PauseJob(alias, store_alias) => match self.pause_job(alias, store_alias) {
-                Ok(_) => println!("Pause Job was fine"),
-                Err(e) => println!("{}", e),
-            },
+            Msg::PauseJob(alias, store_alias) => {
+                match self.pause_job(alias, store_alias) {
+                    Ok(_) => println!("Pause Job was fine"),
+                    Err(e) => println!("{}", e),
+                }
+            }
             // TODO: Implement Resume Job
-            Msg::ResumeJob(alias, store_alias) => match self.resume_job(alias, store_alias) {
-                Ok(_) => println!("Resume Job was fine"),
-                Err(e) => println!("{}", e),
-            },
+            Msg::ResumeJob(alias, store_alias) => {
+                match self.resume_job(alias, store_alias) {
+                    Ok(_) => println!("Resume Job was fine"),
+                    Err(e) => println!("{}", e),
+                }
+            }
             Msg::Log(id, _status, _result) => {
                 println!("Hello {}", id);
             }
@@ -97,7 +126,8 @@ impl Schedule for Scheduler {
             match cpy.store.get_due_jobs() {
                 Ok(ready) => {
                     for to_execute in ready {
-                        let executioner = self.executors.get(&to_execute.executor);
+                        let executioner =
+                            self.executors.get(&to_execute.executor);
                         match executioner {
                             None => println!("NOTHING GOING ON"),
                             Some(e) => {
@@ -105,7 +135,10 @@ impl Schedule for Scheduler {
                                 // get_elapsed_time(to_execute.start_time);
                                 // TODO: Check Triggers
                                 match (e.execute(&to_execute.job).await) {
-                                    Ok(_v) => println!("execute job v: {}", &to_execute.alias),
+                                    Ok(_v) => println!(
+                                        "execute job v: {}",
+                                        &to_execute.alias
+                                    ),
                                     Err(e) => println!("execute job e: {}", e),
                                 };
 
@@ -113,11 +146,16 @@ impl Schedule for Scheduler {
                                 //     listener.set("job id", "job status", "job event");
                                 // }
 
-                                // TODO: Check next only for timetrigger update 
-                                // start_time. So check the option that is 
+                                // TODO: Check next only for timetrigger update
+                                // start_time. So check the option that is
                                 //returned to update start_time and delete if None
-                                match value.store.remove_job(&to_execute.alias) {
-                                    Ok(_v) => println!("remove job v: {}", &to_execute.alias),
+
+                                match value.store.remove_job(&to_execute.alias)
+                                {
+                                    Ok(_v) => println!(
+                                        "remove job v: {}",
+                                        &to_execute.alias
+                                    ),
                                     Err(e) => println!("remove job e: {}", e),
                                 };
                             }
@@ -132,13 +170,19 @@ impl Schedule for Scheduler {
         }
     }
 
-    fn add_store(&mut self, alias: String, store: Box<dyn Silo>) -> Result<(), String> {
+    fn add_store(
+        &mut self,
+        alias: String,
+        store: Box<dyn Silo>,
+    ) -> Result<(), String> {
         let mut store = Store::new(alias.clone(), store);
 
         match store.store.start() {
             Ok(_) => match self.stores.entry(alias.clone()) {
                 Entry::Occupied(_entry) => match store.store.teardown() {
-                    Ok(_) => Err(format!("store alias {} already exists in stores", &alias)),
+                    Ok(_) => {
+                        Err(format!("store alias {} already exists in stores", &alias))
+                    }
                     Err(_e) => Err(format!(
                         "Store alias {} started, and failed to insert and teardown",
                         &alias
@@ -169,11 +213,17 @@ impl Schedule for Scheduler {
                     .store
                     .add_job(alias, executor, start_time, end_time, job)
             }
-            Entry::Vacant(_entry) => Err(format!("Store {} is not found in stores", &store_alias)),
+            Entry::Vacant(_entry) => {
+                Err(format!("Store {} is not found in stores", &store_alias))
+            }
         }
     }
 
-    fn add_executor(&mut self, alias: String, executor: Executor) -> Result<(), String> {
+    fn add_executor(
+        &mut self,
+        alias: String,
+        executor: Executor,
+    ) -> Result<(), String> {
         match executor.startup() {
             Ok(_) => match self.executors.entry(alias.clone()) {
                 Entry::Occupied(_entry) => match executor.teardown() {
@@ -199,7 +249,9 @@ impl Schedule for Scheduler {
                 match store.store.teardown() {
                     Ok(_) => match self.stores.remove(alias) {
                         Some(_) => Ok(()),
-                        None => Err(String::from("Failed to remove store from scheduler stores")),
+                        None => Err(String::from(
+                            "Failed to remove store from scheduler stores",
+                        )),
                     },
                     Err(e) => Err(e),
                 }
@@ -208,43 +260,67 @@ impl Schedule for Scheduler {
         }
     }
 
-    fn modify_job(&mut self, alias: String, store_alias: String) -> Result<(), String> {
+    fn modify_job(
+        &mut self,
+        alias: String,
+        store_alias: String,
+    ) -> Result<(), String> {
         match self.stores.entry(store_alias.clone()) {
             Entry::Occupied(mut entry) => {
                 let store = entry.get_mut();
                 store.store.modify_job(&alias)
             }
-            Entry::Vacant(_entry) => Err(format!("Store {} was not found in stores", &store_alias)),
+            Entry::Vacant(_entry) => {
+                Err(format!("Store {} was not found in stores", &store_alias))
+            }
         }
     }
 
-    fn pause_job(&mut self, alias: String, store_alias: String) -> Result<(), String> {
+    fn pause_job(
+        &mut self,
+        alias: String,
+        store_alias: String,
+    ) -> Result<(), String> {
         match self.stores.entry(store_alias.clone()) {
             Entry::Occupied(mut entry) => {
                 let store = entry.get_mut();
                 store.store.pause_job(alias)
             }
-            Entry::Vacant(_entry) => Err(format!("Store {} was not found in stores", &store_alias)),
+            Entry::Vacant(_entry) => {
+                Err(format!("Store {} was not found in stores", &store_alias))
+            }
         }
     }
 
-    fn resume_job(&mut self, alias: String, store_alias: String) -> Result<(), String> {
+    fn resume_job(
+        &mut self,
+        alias: String,
+        store_alias: String,
+    ) -> Result<(), String> {
         match self.stores.entry(store_alias.clone()) {
             Entry::Occupied(mut entry) => {
                 let store = entry.get_mut();
                 store.store.resume_job(alias)
             }
-            Entry::Vacant(_entry) => Err(format!("Store {} was not found in stores", &store_alias)),
+            Entry::Vacant(_entry) => {
+                Err(format!("Store {} was not found in stores", &store_alias))
+            }
         }
     }
 
-    fn remove_job(&mut self, alias: String, store_alias: String) -> Result<(), String> {
+    fn remove_job(
+        &mut self,
+        alias: String,
+        store_alias: String,
+    ) -> Result<(), String> {
         match self.stores.entry(store_alias.clone()) {
             Entry::Occupied(mut entry) => {
                 let store = entry.get_mut();
                 store.store.remove_job(&alias)
             }
-            Entry::Vacant(_entry) => Err(format!("Store {} was not found in stores", &store_alias)),
+            Entry::Vacant(_entry) => {
+                Err(format!("Store {} was not found in stores", &store_alias))
+            }
         }
     }
 

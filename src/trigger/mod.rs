@@ -1,42 +1,44 @@
-pub mod time_trigger;
+pub mod and_trigger;
 pub mod job_trigger;
+pub mod or_trigger;
+pub mod time_trigger;
 
 use async_trait::async_trait;
 use std::fmt::Debug;
 
 pub struct Trigger {
-    alias: String,
-    trigger: Box<dyn Fire>,
+  alias: String,
+  trigger: Box<dyn Fire>,
 }
 
 #[async_trait]
 pub trait Fire
 where
-    Self: Send + Sync,
+  Self: Send + Sync,
 {
-    async fn should_run(&self) -> bool;
+  async fn should_run(&self) -> bool;
 
-    async fn next(&self) -> Option<u128>;
+  async fn next(&self) -> Option<u128>;
 
-    fn vclone(&self) -> Box<dyn Fire>;
+  fn vclone(&self) -> Box<dyn Fire>;
 }
 
 impl Clone for Trigger {
-    fn clone(&self) -> Self {
-        Trigger {
-            alias: self.alias.clone(),
-            trigger: self.trigger.vclone(),
-        }
+  fn clone(&self) -> Self {
+    Trigger {
+      alias: self.alias.clone(),
+      trigger: self.trigger.vclone(),
     }
+  }
 }
 
 impl Debug for Trigger {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Trigger")
-            .field("alias", &self.alias)
-            .field("trigger", &"<trigger>")
-            .finish()
-    }
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("Trigger")
+      .field("alias", &self.alias)
+      .field("trigger", &"<trigger>")
+      .finish()
+  }
 }
 
 // Job starttime tuesday 11 ms-epoch

@@ -40,7 +40,7 @@ struct Trigger {
 #[async_trait]
 impl trigger::Fire for Trigger {
     async fn should_run(&self) -> bool {
-      let now = Utc::now();
+        let now = Utc::now();
         let day_match = match &self.day {
             Some(d) => now.weekday() == day_to_chrono_day(d),
             None => true,
@@ -48,12 +48,12 @@ impl trigger::Fire for Trigger {
 
         let time_match = match &self.time {
             Some(Time(h, m)) => {
-              let hour= now.hour();
-              let min = now.minute();
+                let hour = now.hour();
+                let min = now.minute();
 
-              &min == m && &hour == h
-            },
-            None => true
+                &min == m && &hour == h
+            }
+            None => true,
         };
 
         day_match && time_match
@@ -70,6 +70,6 @@ impl trigger::Fire for Trigger {
     }
 
     fn vclone(&self) -> Box<dyn trigger::Fire> {
-      Box::new(self.clone())
+        Box::new(self.clone())
     }
 }
