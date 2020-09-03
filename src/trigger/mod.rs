@@ -17,7 +17,7 @@ where
   Self: Send + Sync, {
   async fn should_run(&mut self) -> bool;
 
-  async fn next(&mut self) -> Option<u128>;
+  async fn next(&mut self) -> Option<i64>;
 
   fn vclone(&self) -> Box<dyn Fire>;
 }

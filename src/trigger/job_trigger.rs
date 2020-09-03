@@ -27,7 +27,7 @@ impl trigger::Fire for Trigger {
     }
   }
 
-  async fn next(&mut self) -> Option<u128> {
+  async fn next(&mut self) -> Option<i64> {
     None
   }
 

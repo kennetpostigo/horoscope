@@ -185,8 +185,8 @@ impl Schedule for Scheduler {
     alias: String,
     store_alias: String,
     executor: String,
-    start_time: u128,
-    end_time: Option<u128>,
+    start_time: i64,
+    end_time: Option<i64>,
     job: Box<dyn Work>,
   ) -> Result<(), String> {
     match self.stores.entry(store_alias.clone()) {

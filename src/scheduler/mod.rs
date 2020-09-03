@@ -6,9 +6,10 @@ use async_std::prelude::*;
 use async_std::stream;
 use async_std::task;
 use async_trait::async_trait;
+use chrono::prelude::*;
 use futures::{select, FutureExt};
 use std::fmt;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 
 use crate::executor::Executor;
 use crate::job::Work;
@@ -44,7 +45,7 @@ pub enum Msg {
   RemoveStore(String),
 
   // Job Msgs
-  AddJob(String, String, String, u128, Option<u128>, Box<dyn Work>),
+  AddJob(String, String, String, i64, Option<i64>, Box<dyn Work>),
   ModifyJob(String, String),
   RemoveJob(String, String),
   PauseJob(String, String),
@@ -60,12 +61,9 @@ pub enum Msg {
   Log(String, String, String),
 }
 
-pub fn get_elapsed_time(start_time: u128) {
-  let now = SystemTime::now()
-    .duration_since(UNIX_EPOCH)
-    .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
-
-  println!("{}", now.as_nanos() - start_time * 1000000);
+pub fn get_elapsed_time(start_time: i64) {
+  let now = Utc::now().timestamp_nanos();
+  println!("{}", now - start_time * 1000000);
 }
 
 pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
@@ -120,8 +118,8 @@ where
     alias: String,
     store_alias: String,
     executor: String,
-    start_time: u128,
-    end_time: Option<u128>,
+    start_time: i64,
+    end_time: Option<i64>,
     job: Box<dyn Work>,
   ) -> Result<(), String>;
 

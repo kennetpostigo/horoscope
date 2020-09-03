@@ -14,7 +14,7 @@ impl trigger::Fire for Trigger {
       && self.right.trigger.should_run().await
   }
 
-  async fn next(&mut self) -> Option<u128> {
+  async fn next(&mut self) -> Option<i64> {
     None
   }
 

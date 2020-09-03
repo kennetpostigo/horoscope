@@ -7,7 +7,8 @@ pub mod store;
 pub mod trigger;
 
 use async_std::task;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration};
+use chrono::prelude::*;
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
@@ -17,11 +18,9 @@ use crate::store::memory::Store;
 #[async_std::main]
 async fn main() {
   let start_time = {
-    let now = SystemTime::now()
-      .duration_since(UNIX_EPOCH)
-      .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
-    let delay: u128 = 10000;
-    let start_time = now.as_millis() + delay;
+    let now = Utc::now().timestamp_nanos();
+    let delay: i64 = 10000;
+    let start_time = now + delay;
     start_time
   };
 

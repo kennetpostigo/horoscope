@@ -11,6 +11,6 @@ where
   Self: Send + Sync, {
   status: String,
   id: String,
-  time: u128, // when it occured
+  time: i64, // when it occured
               // event: Box<dyn Eventful>, // defined by type, like Job, Store, Executor, Scheduler
 }

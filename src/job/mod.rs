@@ -50,8 +50,8 @@ pub struct Job {
   pub state: Status,
   pub alias: String,
   pub executor: String,
-  pub start_time: u128,
-  pub end_time: Option<u128>,
+  pub start_time: i64,
+  pub end_time: Option<i64>,
   pub triggers: HashMap<String, Box<Trigger>>,
   pub job: Box<dyn Work>,
 }
@@ -61,8 +61,8 @@ impl Job {
   pub fn new(
     alias: String,
     executor: String,
-    start_time: u128,
-    end_time: Option<u128>,
+    start_time: i64,
+    end_time: Option<i64>,
     triggers: HashMap<String, Box<Trigger>>,
     job: Box<dyn Work>,
   ) -> Job {

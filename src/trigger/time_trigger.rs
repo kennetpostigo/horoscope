@@ -32,7 +32,7 @@ fn day_to_chrono_day(day: &Day) -> Weekday {
 
 #[derive(Clone, Debug)]
 struct Trigger {
-  interval: Option<u128>,
+  interval: Option<i64>,
   day: Option<Day>,
   time: Option<Time>,
 }
@@ -59,7 +59,7 @@ impl trigger::Fire for Trigger {
     day_match && time_match
   }
 
-  async fn next(&mut self) -> Option<u128> {
+  async fn next(&mut self) -> Option<i64> {
     let run: bool = self.should_run().await;
 
     if run {

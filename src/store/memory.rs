@@ -1,6 +1,6 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::prelude::*;
 
 use crate::job::{Job, Work};
 use crate::store::Silo;
@@ -36,8 +36,8 @@ impl Silo for Store {
     &mut self,
     alias: String,
     executor: String,
-    start_time: u128,
-    end_time: Option<u128>,
+    start_time: i64,
+    end_time: Option<i64>,
     job: Box<dyn Work>,
   ) -> Result<(), String> {
     self.jobs.entry(alias.clone()).or_insert(Job::new(
@@ -95,10 +95,7 @@ impl Silo for Store {
   fn get_due_jobs(&mut self) -> Result<Vec<&Job>, String> {
     let mut ready = Vec::new();
     for (_key, value) in &self.jobs {
-      let start = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("SOMETHING WENT WRONG WITH THE JOB START DATE");
-      let now = start.as_millis();
+      let now = Utc::now().timestamp_nanos();
 
       if value.start_time <= now {
         ready.push(value);
