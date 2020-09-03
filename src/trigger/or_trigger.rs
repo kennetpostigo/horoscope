@@ -9,12 +9,12 @@ struct Trigger {
 
 #[async_trait]
 impl trigger::Fire for Trigger {
-  async fn should_run(&self) -> bool {
+  async fn should_run(&mut self) -> bool {
     self.left.trigger.should_run().await
       || self.right.trigger.should_run().await
   }
 
-  async fn next(&self) -> Option<u128> {
+  async fn next(&mut self) -> Option<u128> {
     None
   }
 

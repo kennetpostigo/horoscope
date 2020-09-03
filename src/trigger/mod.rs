@@ -15,9 +15,9 @@ pub struct Trigger {
 pub trait Fire
 where
   Self: Send + Sync, {
-  async fn should_run(&self) -> bool;
+  async fn should_run(&mut self) -> bool;
 
-  async fn next(&self) -> Option<u128>;
+  async fn next(&mut self) -> Option<u128>;
 
   fn vclone(&self) -> Box<dyn Fire>;
 }

@@ -14,20 +14,20 @@ struct Trigger {
 
 #[async_trait]
 impl trigger::Fire for Trigger {
-  async fn should_run(&self) -> bool {
+  async fn should_run(&mut self) -> bool {
     match self.ledger.ledger.entry(
       &self.store,
       &self.job,
       &self.status,
       &self.time,
     ) {
-      Ok(Some(_)) => true,
-      Ok(None) => false,
+      Ok(true) => true,
+      Ok(false) => false,
       Err(_e) => false,
     }
   }
 
-  async fn next(&self) -> Option<u128> {
+  async fn next(&mut self) -> Option<u128> {
     None
   }
 

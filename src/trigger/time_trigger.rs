@@ -39,7 +39,7 @@ struct Trigger {
 
 #[async_trait]
 impl trigger::Fire for Trigger {
-  async fn should_run(&self) -> bool {
+  async fn should_run(&mut self) -> bool {
     let now = Utc::now();
     let day_match = match &self.day {
       Some(d) => now.weekday() == day_to_chrono_day(d),
@@ -59,7 +59,7 @@ impl trigger::Fire for Trigger {
     day_match && time_match
   }
 
-  async fn next(&self) -> Option<u128> {
+  async fn next(&mut self) -> Option<u128> {
     let run: bool = self.should_run().await;
 
     if run {

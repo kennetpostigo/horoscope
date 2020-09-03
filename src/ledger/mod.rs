@@ -13,15 +13,7 @@ pub trait History
 where
   Self: Send + Sync, {
   fn insert(
-    &self,
-    store: &String,
-    job: &String,
-    status: &Status,
-    time: &i64,
-  ) -> Result<(), String>;
-
-  fn remove(
-    &self,
+    &mut self,
     store: &String,
     job: &String,
     status: &Status,
@@ -29,12 +21,12 @@ where
   ) -> Result<(), String>;
 
   fn entry(
-    &self,
+    &mut self,
     store: &String,
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<Option<(String, i64)>, String>;
+  ) -> Result<bool, String>;
 
   fn vclone(&self) -> Box<dyn History>;
 }

@@ -16,21 +16,21 @@ struct Ledger {
 
 impl History for Ledger {
   fn insert(
-    &self,
+    &mut self,
     store: &String,
     job: &String,
     status: &Status,
     time: &i64,
   ) -> Result<(), String> {
     match self.data.entry(store.clone()) {
-      Entry::Occupied(sentry) => {
-        let store_map = sentry.get();
+      Entry::Occupied(mut sentry) => {
+        let store_map = sentry.get_mut();
         match store_map.entry(job.clone()) {
-          Entry::Occupied(jentry) => {
-            let job_map = jentry.get();
+          Entry::Occupied(mut jentry) => {
+            let job_map = jentry.get_mut();
             match job_map.entry(status.to_string()) {
-              Entry::Occupied(entry) => {
-                let entries = entry.get();
+              Entry::Occupied(mut entry) => {
+                let entries = entry.get_mut();
                 entries.push((
                   store.clone(),
                   job.clone(),
@@ -39,32 +39,76 @@ impl History for Ledger {
                 ));
                 Ok(())
               }
-              Entry::Vacant(_e) => Ok(()),
+              Entry::Vacant(entry) => {
+                entry.insert(vec![(
+                  store.clone(),
+                  job.clone(),
+                  status.clone(),
+                  time.clone(),
+                )]);
+                Ok(())
+              }
             }
           }
-          Entry::Vacant(_) => Ok(()),
+          Entry::Vacant(entry) => {
+            let mut status_map = HashMap::new();
+            status_map.insert(
+              status.to_string(),
+              vec![(store.clone(), job.clone(), status.clone(), time.clone())],
+            );
+            entry.insert(status_map);
+            Ok(())
+          }
         }
       }
-      Entry::Vacant(_entry) => Ok(()),
+      Entry::Vacant(entry) => {
+        let mut job_map = HashMap::new();
+        let mut status_map = HashMap::new();
+        status_map.insert(
+          status.to_string(),
+          vec![(store.clone(), job.clone(), status.clone(), time.clone())],
+        );
+        job_map.insert(job.clone(), status_map);
+        entry.insert(job_map);
+        Ok(())
+      }
     }
   }
 
-  fn remove(
-    &self,
-    store: &String,
-    job: &String,
-    status: &Status,
-    time: &i64,
-  ) -> Result<(), String> {
-  }
-
   fn entry(
-    &self,
+    &mut self,
     store: &String,
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<Option<(String, i64)>, String> {
+  ) -> Result<bool, String> {
+    let now = Utc::now().timestamp_nanos();
+    match self.data.entry(store.clone()) {
+      Entry::Occupied(mut sentry) => {
+        let store_map = sentry.get_mut();
+        match store_map.entry(job.clone()) {
+          Entry::Occupied(mut jentry) => {
+            let job_map = jentry.get_mut();
+            match job_map.entry(status.to_string()) {
+              Entry::Occupied(entry) => {
+                let entries = entry.get();
+                let mut contains = false;
+                for (_s, _j, _sus, t) in entries {
+                  if (now - t) <= time.clone() {
+                    contains = true;
+                    break;
+                  }
+                }
+                Ok(contains)
+              }
+              Entry::Vacant(_entry) => Ok(false),
+            }
+          }
+          Entry::Vacant(_entry) => Ok(false),
+        }
+      }
+      Entry::Vacant(_entry) => Ok(false),
+    }
   }
 
   fn vclone(&self) -> Box<dyn History> {
