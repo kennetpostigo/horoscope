@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use colored::*;
 
 use crate::job::{Status, Work};
 
@@ -35,15 +36,20 @@ impl Job {
 #[async_trait]
 impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
-    println!("Starting Network Job: {}", self.alias);
+    println!(
+      "{}{}{}",
+      "::::   Starting Network Job ".truecolor(0, 0, 0).bold().on_green(),
+      self.alias.truecolor(0, 0, 0).bold().on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(())
   }
 
   async fn func(&self) -> Status {
     match &self.method {
-      NetType::Get => match surf::get(&self.url).recv_string().await {
-        Ok(msg) => {
-          print!("{}", msg);
+      NetType::Get => match surf::get(&self.url).await {
+        Ok(_msg) => {
+          // println!("Network Job Response Status: {}", msg.status());
           Status::Success
         }
         Err(_) => Status::Failure(String::from("Unable to complete request")),
@@ -56,8 +62,8 @@ impl Work for Job {
               let res = surf::post(&self.url).body(bdy).await;
 
               match res {
-                Ok(r) => {
-                  println!("{}", r.status());
+                Ok(_r) => {
+                  // println!("Network Job Response Status: {}", r.status());
                   Status::Success
                 }
                 Err(_) => {
@@ -71,8 +77,8 @@ impl Work for Job {
         None => {
           let res = surf::post(&self.url).await;
           match res {
-            Ok(r) => {
-              println!("{}", r.status());
+            Ok(_r) => {
+              // println!("Network Job Response Status: {}", r.status());
               Status::Success
             }
             Err(_) => {
@@ -85,7 +91,12 @@ impl Work for Job {
   }
 
   async fn teardown(&self) -> Result<String, String> {
-    println!("Tearing down Network Job: {}", self.alias);
+    println!(
+      "{}{}{}",
+      "::::   Tearing Down Network Job ".truecolor(0, 0, 0).bold().on_green(),
+      self.alias.truecolor(0, 0, 0).bold().on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(String::from(""))
   }
 

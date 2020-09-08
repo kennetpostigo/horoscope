@@ -33,6 +33,14 @@ impl Status {
 // Ledger Trigger
 // User-defined Trigger
 
+// pub async fn deserialize(job_str: String) -> Box<dyn Work>  {
+  
+// }
+
+// pub async fn serialize(job_str: Box<dyn Work>) -> String {
+//   for 
+// }
+
 #[async_trait]
 pub trait Work
 where

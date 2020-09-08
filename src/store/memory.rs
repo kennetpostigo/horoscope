@@ -1,6 +1,8 @@
+use chrono::prelude::*;
+use colored::*;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use chrono::prelude::*;
+use async_trait::async_trait;
 
 use crate::job::{Job, Work};
 use crate::store::Silo;
@@ -21,14 +23,31 @@ impl Store {
   }
 }
 
+#[async_trait]
 impl Silo for Store {
-  fn start(&mut self) -> Result<(), String> {
-    println!(":: Starting JobStore {} ::", self.alias);
+  async fn start(&mut self) -> Result<(), String> {
+    println!(
+      "{}{}{}",
+      "::::   Starting Memory JobStore "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
+      self.alias.truecolor(0, 0, 0).bold().on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(())
   }
 
   fn teardown(&self) -> Result<(), String> {
-    println!(":: Shutting down JobStore {} :: ", self.alias);
+    println!(
+      "{}{}{}",
+      "::::   Tearing Down Memory JobStore "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
+      self.alias.truecolor(0, 0, 0).bold().on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(())
   }
 

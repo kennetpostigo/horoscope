@@ -2,16 +2,18 @@ pub mod event;
 pub mod executor;
 pub mod job;
 pub mod ledger;
+pub mod logger;
 pub mod scheduler;
 pub mod store;
 pub mod trigger;
 
 use async_std::task;
-use std::time::{Duration};
 use chrono::prelude::*;
+use std::time::Duration;
 
 use crate::executor::Executor;
 use crate::job::network::{Job, NetType};
+use crate::logger::Logger;
 use crate::scheduler::{blocking, daemon, Msg, Schedule};
 use crate::store::memory::Store;
 
@@ -19,10 +21,14 @@ use crate::store::memory::Store;
 async fn main() {
   let start_time = {
     let now = Utc::now().timestamp_nanos();
-    let delay: i64 = 10000;
+    let delay: i64 = 10000000000;
     let start_time = now + delay;
+    // println!("{}\n{}", now, now + delay);
     start_time
   };
+
+  let logger = Logger::new(true, vec![]);
+  let mut blk_scheduler = blocking::Scheduler::new(Some(logger));
 
   let store = Store::new(String::from("jobStore-test"));
   let exec = Executor::new(String::from("executor-test"));
@@ -33,10 +39,9 @@ async fn main() {
     None,
   );
 
-  let mut blk_scheduler = blocking::Scheduler::new();
-
   blk_scheduler
     .add_store(String::from("jobStore-test"), Box::new(store))
+    .await
     .unwrap();
   blk_scheduler
     .add_executor(String::from("executor-test"), exec)
@@ -64,8 +69,8 @@ async fn main() {
     ))
     .await
   {
-    Ok(_u) => println!("Message Sent!"),
-    Err(err) => println!("Err: {}", err),
+    Ok(_u) => (),
+    Err(err) => (),
   };
 
   // sender
@@ -79,18 +84,27 @@ async fn main() {
   //     .send(Msg::AddExecutor(String::from("executor-test"), exec))
   //     .await
   //     .unwrap();
-  // sender
-  //     .send(Msg::AddJob(
-  //         String::from("job-1"),
-  //         String::from("jobStore-test"),
-  //         String::from("executor-test"),
-  //         start_time,
-  //         None,
-  //         Box::new(njob),
-  //     ))
-  //     .await
-  //     .unwrap();
 
-  println!("TEST");
-  task::sleep(Duration::from_secs(30)).await;
+  let njob2 = Job::new(
+    String::from("job-2"),
+    String::from("https://ping.me/"),
+    NetType::Get,
+    None,
+  );
+
+  task::sleep(Duration::from_secs(3)).await;
+
+  sender
+    .send(Msg::AddJob(
+      String::from("job-2"),
+      String::from("jobStore-test"),
+      String::from("executor-test"),
+      start_time - 2000000000,
+      None,
+      Box::new(njob2),
+    ))
+    .await
+    .unwrap();
+
+  task::sleep(Duration::from_secs(300000)).await;
 }

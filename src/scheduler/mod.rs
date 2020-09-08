@@ -79,9 +79,8 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
     loop {
       select! {
           m = reader.recv().fuse() => {
-              println!("Msg is being proxied");
               match m {
-                  Ok(msg) => schdlr.proxy(msg, &sender, &reader),
+                  Ok(msg) => schdlr.proxy(msg, &sender, &reader).await,
                   Err(e) => println!("{}", e)
               }
           },
@@ -101,13 +100,18 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
 pub trait Schedule
 where
   Self: Send + Sync, {
-  fn proxy(&mut self, msg: Msg, sender: &Sender<Msg>, reader: &Receiver<Msg>);
+  async fn proxy(
+    &mut self,
+    msg: Msg,
+    sender: &Sender<Msg>,
+    reader: &Receiver<Msg>,
+  );
 
   fn startup(&mut self);
 
   async fn check_jobs(&mut self);
 
-  fn add_store(
+  async fn add_store(
     &mut self,
     alias: String,
     store: Box<dyn Silo>,

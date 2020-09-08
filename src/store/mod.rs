@@ -2,7 +2,9 @@ pub mod memory;
 pub mod pg;
 pub mod redis;
 
+use colored::*;
 use std::fmt::Debug;
+use async_trait::async_trait;
 
 use crate::job::{Job, Work};
 
@@ -11,11 +13,20 @@ pub enum JobState {
   Success,
   Failure,
 }
+
+#[async_trait]
 pub trait Silo
 where
   Self: Send + Sync, {
-  fn start(&mut self) -> Result<(), String> {
-    println!(":: Starting JobStore ::");
+  async fn start(&mut self) -> Result<(), String> {
+    println!(
+      "{}{}",
+      "::::   Starting JobStore "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(())
   }
 
@@ -39,7 +50,14 @@ where
   fn get_due_jobs(&mut self) -> Result<Vec<&Job>, String>;
 
   fn teardown(&self) -> Result<(), String> {
-    println!(":: Tearing Down JobStore ::");
+    println!(
+      "{}{}",
+      "::::   Tearing Down JobStore "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
+      "   ::::".truecolor(0, 0, 0).bold().on_green()
+    );
     Ok(())
   }
 

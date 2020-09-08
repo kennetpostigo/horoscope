@@ -1,4 +1,5 @@
 use crate::job::{Status, Work};
+use colored::*;
 
 #[derive(Clone, Debug)]
 pub struct Executor {
@@ -11,7 +12,12 @@ impl Executor {
   }
 
   pub fn startup(&self) -> Result<(), String> {
-    println!(":: Starting Executor {}::", self.alias);
+    println!(
+      "{}{}{}",
+      "::::   Starting Executor ".truecolor(0,0,0).bold().on_green(),
+      self.alias.truecolor(0,0,0).bold().on_green(),
+      "   ::::".truecolor(0,0,0).bold().on_green()
+    );
     Ok(())
   }
 
@@ -27,7 +33,12 @@ impl Executor {
   }
 
   pub fn teardown(&self) -> Result<(), String> {
-    println!(":: Shutting down Executor {} ::", self.alias);
+    println!(
+      "{}{}{}",
+      "::::   Tearing Down Executor ".truecolor(0,0,0).bold().on_green(),
+      self.alias.truecolor(0,0,0).bold().on_green(),
+      "   ::::".truecolor(0,0,0).bold().on_green()
+    );
     Ok(())
   }
 }
