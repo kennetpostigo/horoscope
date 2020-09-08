@@ -54,11 +54,11 @@ provides functionality out the box and is easily extensible.
 
 - **Fast:** horoscope runs magnitudes faster than schedulers built in other
   languages that are mainstream. stream, horoscope runs magnitudes faster
-- **Fast:** Our robust allocator and threadpool designs provide ultra-high
-  throughput with predictably low latency.
+- **Concurrent:** executors run jobs in their own tasks in order to get as much
+work done as fast as possible.
 - **Intuitive:** You get a lot of powerful functionality out of the box to run
   CRON, Network tasks, retrieve jobs from memory, pg, and redis. If they are not
-  what you are looking for, Implement your own Job, Store, or Executor.
+  what you are looking for, Implement your own Job, Trigger, Store, or Executor.
 - **Easy to learn:** [Detailed documentation][docs]
 
 [docs]: https://docs.rs/horoscope
