@@ -1,4 +1,4 @@
-pub mod cron;
+pub mod sys;
 pub mod network;
 
 use crate::trigger::Trigger;
@@ -31,20 +31,10 @@ impl Status {
 
 // Time Trigger
 // Ledger Trigger
-// User-defined Trigger
-
-// pub async fn deserialize(job_str: String) -> Box<dyn Work>  {
-  
-// }
-
-// pub async fn serialize(job_str: Box<dyn Work>) -> String {
-//   for 
-// }
+// User-defined Triggerß
 
 #[async_trait]
-pub trait Work
-where
-  Self: Send + Sync, {
+pub trait Work: Send + Sync {
   async fn startup(&self) -> Result<(), String>;
 
   async fn func(&self) -> Status;

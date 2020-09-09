@@ -15,10 +15,8 @@ pub enum JobState {
 }
 
 #[async_trait]
-pub trait Silo
-where
-  Self: Send + Sync, {
-  async fn start(&mut self) -> Result<(), String> {
+pub trait Silo: Send + Sync {
+  async fn startup(&mut self) -> Result<(), String> {
     println!(
       "{}{}",
       "::::   Starting JobStore "
@@ -76,7 +74,7 @@ impl Store {
 }
 
 impl Clone for Store {
-  fn clone(&self) -> Self {
+  fn clone(&self) -> Store {
     Store {
       alias: self.alias.clone(),
       store: self.store.vclone(),

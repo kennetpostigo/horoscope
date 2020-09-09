@@ -15,7 +15,7 @@ pub struct Store {
 }
 
 impl Store {
-  pub fn new(alias: String) -> Self {
+  pub fn new(alias: String) -> Store {
     Store {
       alias: alias.clone(),
       jobs: HashMap::new(),
@@ -25,7 +25,7 @@ impl Store {
 
 #[async_trait]
 impl Silo for Store {
-  async fn start(&mut self) -> Result<(), String> {
+  async fn startup(&mut self) -> Result<(), String> {
     println!(
       "{}{}{}",
       "::::   Starting Memory JobStore "

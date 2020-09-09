@@ -219,7 +219,7 @@ impl Schedule for Scheduler {
   ) -> Result<(), String> {
     let mut store = Store::new(alias.clone(), store);
 
-    match store.store.start().await {
+    match store.store.startup().await {
       Ok(_) => match self.stores.entry(alias.clone()) {
         Entry::Occupied(_entry) => match store.store.teardown() {
           Ok(_) => {

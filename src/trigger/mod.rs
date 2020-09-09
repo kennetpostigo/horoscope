@@ -12,9 +12,7 @@ pub struct Trigger {
 }
 
 #[async_trait]
-pub trait Fire
-where
-  Self: Send + Sync, {
+pub trait Fire: Send + Sync {
   async fn should_run(&mut self) -> bool;
 
   async fn next(&mut self) -> Option<i64>;

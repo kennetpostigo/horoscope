@@ -1,8 +1,9 @@
 [package]
 name = "horoscope"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Kennet Postigo <kennetfpostigo@gmail.com>", "Jonathan Beltran <jbelt021@fiu.edu>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 async-channel = "1.4.1"

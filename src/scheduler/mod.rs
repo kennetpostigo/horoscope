@@ -97,9 +97,7 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
 }
 
 #[async_trait]
-pub trait Schedule
-where
-  Self: Send + Sync, {
+pub trait Schedule: Send + Sync {
   async fn proxy(
     &mut self,
     msg: Msg,

@@ -70,7 +70,7 @@ async fn main() {
     .await
   {
     Ok(_u) => (),
-    Err(err) => (),
+    Err(_err) => (),
   };
 
   // sender

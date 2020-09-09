@@ -9,9 +9,7 @@ pub struct Ledger {
   pub ledger: Box<dyn History>,
 }
 
-pub trait History
-where
-  Self: Send + Sync, {
+pub trait History: Send + Sync {
   fn insert(
     &mut self,
     store: &String,
