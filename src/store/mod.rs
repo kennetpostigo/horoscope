@@ -2,9 +2,9 @@ pub mod memory;
 pub mod pg;
 pub mod redis;
 
+use async_trait::async_trait;
 use colored::*;
 use std::fmt::Debug;
-use async_trait::async_trait;
 
 use crate::job::{Job, Work};
 
@@ -45,7 +45,7 @@ pub trait Silo: Send + Sync {
 
   fn remove_job(&mut self, alias: &String) -> Result<(), String>;
 
-  fn get_due_jobs(&mut self) -> Result<Vec<&Job>, String>;
+  fn get_due_jobs(&mut self) -> Result<Vec<&mut Job>, String>;
 
   fn teardown(&self) -> Result<(), String> {
     println!(

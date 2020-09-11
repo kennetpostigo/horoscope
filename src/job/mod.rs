@@ -1,8 +1,9 @@
-pub mod sys;
 pub mod network;
+pub mod sys;
 
 use crate::trigger::Trigger;
 use async_trait::async_trait;
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -75,6 +76,31 @@ impl Job {
     }
   }
 
+  pub async fn validate_triggers(&mut self) -> (bool, Option<i64>) {
+    let mut should_run = true;
+    let mut next = None;
+    for (_, value) in &mut self.triggers {
+      let trig = &mut value.trigger;
+      if !(trig.should_run().await) {
+        should_run = false;
+      } else {
+        match trig.next().await {
+          Some(v) => match next {
+            Some(curr) => {
+              if v < curr {
+                next = Some(v);
+              }
+            }
+            None => next = Some(v),
+          },
+          None => (),
+        }
+      }
+    }
+
+    (should_run, next)
+  }
+
   pub fn modify_job(&mut self) -> Result<(), String> {
     Ok(())
   }
@@ -87,6 +113,30 @@ impl Job {
   pub fn resume_job(&mut self) -> Result<(), String> {
     self.state = Status::Running;
     Ok(())
+  }
+
+  pub fn add_trigger(&mut self, trigger: Trigger) -> Result<(), String> {
+    match self.triggers.entry(trigger.alias.clone()) {
+      Entry::Occupied(_) => {
+        Err(format!("Trigger {} already exists", trigger.alias.clone()))
+      }
+      Entry::Vacant(e) => {
+        e.insert(Box::new(trigger));
+        Ok(())
+      }
+    }
+  }
+
+  pub fn remove_trigger(mut self, trigger_alias: String) -> Result<(), String> {
+    match self.triggers.entry(trigger_alias.clone()) {
+      Entry::Occupied(e) => {
+        e.remove();
+        Ok(())
+      }
+      Entry::Vacant(_) => {
+        Err(format!("Trigger {} doesn't exists", trigger_alias.clone()))
+      }
+    }
   }
 }
 

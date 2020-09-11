@@ -159,47 +159,48 @@ impl Schedule for Scheduler {
                 // Only when measuring:
                 // get_elapsed_time(to_execute.start_time);
                 // TODO: Check Triggers
-                match (e.execute(&to_execute.job).await) {
-                  Ok(_v) => {
-                    if let Some(logger) = &self.logger {
-                      logger.info(format!(
-                        "EXECUTING JOB {} FROM STORE {} SUCCEEDED",
-                        &to_execute.alias,
-                        &value.clone().alias
-                      ))
+                let (should_run, next) = to_execute.validate_triggers().await;
+                if (should_run) {
+                  match (e.execute(&to_execute.job).await) {
+                    Ok(_v) => {
+                      if let Some(logger) = &self.logger {
+                        logger.info(format!(
+                          "EXECUTING JOB {} FROM STORE {} SUCCEEDED",
+                          &to_execute.alias,
+                          &value.clone().alias
+                        ))
+                      }
                     }
-                  }
-                  Err(e) => {
-                    if let Some(logger) = &self.logger {
-                      logger.err(e)
+                    Err(e) => {
+                      if let Some(logger) = &self.logger {
+                        logger.err(e)
+                      }
                     }
-                  }
-                };
+                  };
+                }
 
-                // for listener in &self.listeners {
-                //     listener.set("job id", "job status", "job event");
-                // }
-
-                // TODO: Check next only for timetrigger update
-                // start_time. So check the option that is
-                //returned to update start_time and delete if None
-
-                match value.store.remove_job(&to_execute.alias) {
-                  Ok(_v) => {
-                    if let Some(logger) = &self.logger {
-                      logger.info(format!(
-                        "REMOVING JOB {} FROM STORE {} SUCCEEDED",
-                        &to_execute.alias,
-                        &value.clone().alias
-                      ))
-                    }
+                if let Some(v) = next {
+                  if (should_run) {
+                    to_execute.start_time = v;
                   }
-                  Err(e) => {
-                    if let Some(logger) = &self.logger {
-                      logger.err(e)
+                } else {
+                  match value.store.remove_job(&to_execute.alias) {
+                    Ok(_v) => {
+                      if let Some(logger) = &self.logger {
+                        logger.info(format!(
+                          "REMOVING JOB {} FROM STORE {} SUCCEEDED",
+                          &to_execute.alias,
+                          &value.clone().alias
+                        ))
+                      }
                     }
-                  }
-                };
+                    Err(e) => {
+                      if let Some(logger) = &self.logger {
+                        logger.err(e)
+                      }
+                    }
+                  };
+                }
               }
             };
           }

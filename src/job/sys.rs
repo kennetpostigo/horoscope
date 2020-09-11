@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use async_process::Command;
+use async_trait::async_trait;
 use colored::*;
 
 use crate::job::{Status, Work};
@@ -8,15 +8,11 @@ use crate::job::{Status, Work};
 pub struct Job {
   pub alias: String,
   pub script: String,
-  pub args: Vec<String>
+  pub args: Vec<String>,
 }
 
 impl Job {
-  pub fn new(
-    alias: String,
-    script: String,
-    args: Vec<String>,
-  ) -> Self {
+  pub fn new(alias: String, script: String, args: Vec<String>) -> Self {
     Job {
       alias,
       script,
@@ -30,7 +26,10 @@ impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
     println!(
       "{}{}{}",
-      "::::   Starting Sys Job ".truecolor(0, 0, 0).bold().on_green(),
+      "::::   Starting Sys Job "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
       self.alias.truecolor(0, 0, 0).bold().on_green(),
       "   ::::".truecolor(0, 0, 0).bold().on_green()
     );
@@ -38,16 +37,26 @@ impl Work for Job {
   }
 
   async fn func(&self) -> Status {
-    match Command::new(&self.script.clone()).args(&self.args).output().await {
+    match Command::new(&self.script.clone())
+      .args(&self.args)
+      .output()
+      .await
+    {
       Ok(_) => Status::Success,
-      Err(_e) => Status::Failure(format!("Failed to successfully run {} with {:?}", &self.script, &self.args))
+      Err(_e) => Status::Failure(format!(
+        "Failed to successfully run {} with {:?}",
+        &self.script, &self.args
+      )),
     }
   }
 
   async fn teardown(&self) -> Result<String, String> {
     println!(
       "{}{}{}",
-      "::::   Tearing Down Sys Job ".truecolor(0, 0, 0).bold().on_green(),
+      "::::   Tearing Down Sys Job "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
       self.alias.truecolor(0, 0, 0).bold().on_green(),
       "   ::::".truecolor(0, 0, 0).bold().on_green()
     );

@@ -54,7 +54,7 @@
 //     end_time: Option<i64>,
 //     job: Box<dyn Work>,
 //   ) -> Result<(), String> {
-    
+
 //   }
 
 //   fn modify_job(&mut self, alias: &String) -> Result<(), String> {}

@@ -38,7 +38,10 @@ impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
     println!(
       "{}{}{}",
-      "::::   Starting Network Job ".truecolor(0, 0, 0).bold().on_green(),
+      "::::   Starting Network Job "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
       self.alias.truecolor(0, 0, 0).bold().on_green(),
       "   ::::".truecolor(0, 0, 0).bold().on_green()
     );
@@ -93,7 +96,10 @@ impl Work for Job {
   async fn teardown(&self) -> Result<String, String> {
     println!(
       "{}{}{}",
-      "::::   Tearing Down Network Job ".truecolor(0, 0, 0).bold().on_green(),
+      "::::   Tearing Down Network Job "
+        .truecolor(0, 0, 0)
+        .bold()
+        .on_green(),
       self.alias.truecolor(0, 0, 0).bold().on_green(),
       "   ::::".truecolor(0, 0, 0).bold().on_green()
     );

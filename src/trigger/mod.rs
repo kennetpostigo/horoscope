@@ -7,8 +7,8 @@ use async_trait::async_trait;
 use std::fmt::Debug;
 
 pub struct Trigger {
-  alias: String,
-  trigger: Box<dyn Fire>,
+  pub alias: String,
+  pub trigger: Box<dyn Fire>,
 }
 
 #[async_trait]

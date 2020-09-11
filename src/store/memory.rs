@@ -1,8 +1,8 @@
+use async_trait::async_trait;
 use chrono::prelude::*;
 use colored::*;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use async_trait::async_trait;
 
 use crate::job::{Job, Work};
 use crate::store::Silo;
@@ -111,9 +111,9 @@ impl Silo for Store {
     }
   }
 
-  fn get_due_jobs(&mut self) -> Result<Vec<&Job>, String> {
+  fn get_due_jobs(&mut self) -> Result<Vec<&mut Job>, String> {
     let mut ready = Vec::new();
-    for (_key, value) in &self.jobs {
+    for (_key, value) in &mut self.jobs {
       let now = Utc::now().timestamp_nanos();
 
       if value.start_time <= now {
