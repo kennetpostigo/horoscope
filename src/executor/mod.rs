@@ -23,11 +23,10 @@ impl Executor {
 
   pub async fn execute(&self, job: &Box<dyn Work>) -> Result<(), String> {
     match job.func().await {
+      Status::Waiting => Ok(()),
       Status::Success => Ok(()),
       Status::Running => Ok(()),
-      Status::Retry => Ok(()),
       Status::Paused => Ok(()),
-      Status::Uninitialized => Ok(()),
       Status::Failure(reason) => Err(reason),
     }
   }

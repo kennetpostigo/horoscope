@@ -2,3 +2,4 @@ hard_tabs = false
 tab_spaces = 2
 max_width = 80
 brace_style = "PreferSameLine"
+control_brace_style = "AlwaysSameLine"

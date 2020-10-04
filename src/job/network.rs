@@ -14,6 +14,7 @@ pub struct Job {
   pub alias: String,
   pub url: String,
   pub method: NetType,
+  pub headers: Option<String>,
   pub body: Option<String>,
 }
 
@@ -22,12 +23,14 @@ impl Job {
     alias: String,
     url: String,
     method: NetType,
+    headers: Option<String>,
     body: Option<String>,
   ) -> Self {
     Job {
       alias,
       url,
       method,
+      headers,
       body,
     }
   }

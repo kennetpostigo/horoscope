@@ -9,6 +9,15 @@ pub struct Ledger {
   pub ledger: Box<dyn History>,
 }
 
+impl Ledger {
+  pub fn new(alias: String, ledger: Box<dyn History>) -> Self {
+    Ledger {
+      alias,
+      ledger: ledger,
+    }
+  }
+}
+
 pub trait History: Send + Sync {
   fn insert(
     &mut self,
@@ -16,7 +25,7 @@ pub trait History: Send + Sync {
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<(), String>;
+  );
 
   fn entry(
     &mut self,
@@ -24,7 +33,7 @@ pub trait History: Send + Sync {
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<bool, String>;
+  ) -> bool;
 
   fn vclone(&self) -> Box<dyn History>;
 }
@@ -46,3 +55,24 @@ impl Debug for Ledger {
       .finish()
   }
 }
+
+// Bincode/Sled scraps
+// use serde::{Deserialize, Serialize};
+// use sled::Db;
+
+// let db = sled::open("/quick_scope");
+// pub fn serialize<T: Serialize>(value: &T, db = &mut sled::Db) -> Result<Vec<u8>> {
+//    let val = bincode::options()
+//         .big_endian()
+//         .serialize(&value)
+//         .map_err(|e| e.into());
+
+//   db.insert(key, value);
+// }
+
+// pub fn deserialize<'a, T: Deserialize<'a>>(value: &'a [u8]) -> Result<T> {
+//     bincode::options()
+//         .big_endian()
+//         .deserialize(&value)
+//         .map_err(|e| e.into())
+// }

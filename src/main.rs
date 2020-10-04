@@ -37,6 +37,7 @@ async fn main() {
     String::from("https://ping.me/"),
     NetType::Get,
     None,
+    None,
   );
 
   blk_scheduler
@@ -89,6 +90,7 @@ async fn main() {
     String::from("job-2"),
     String::from("https://ping.me/"),
     NetType::Get,
+    None,
     None,
   );
 

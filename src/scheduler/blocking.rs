@@ -8,6 +8,7 @@ use std::fmt::Debug;
 // use crate::event::Event;
 use crate::executor::Executor;
 use crate::job::Work;
+use crate::ledger::{memory, Ledger};
 use crate::logger::Logger;
 use crate::scheduler::{Msg, Schedule, SchedulerState};
 use crate::store::{Silo, Store};
@@ -16,19 +17,24 @@ use crate::store::{Silo, Store};
 #[derive(Clone, Debug)]
 pub struct Scheduler {
   pub state: SchedulerState,
+  pub ledger: Ledger,
   pub stores: HashMap<String, Store>,
   pub executors: HashMap<String, Executor>,
   pub logger: Option<Logger>,
-  // pub listeners: HashMap<String, Box<dyn Fn(Event) -> ()>>,
 }
 
 impl Scheduler {
   pub fn new(logger: Option<Logger>) -> Self {
     Scheduler {
       state: SchedulerState::Uninitialized,
+      ledger: Ledger::new(
+        // TODO: Generate this randomly or add it as a param
+        String::from("ledger"),
+        Box::new(memory::Ledger::new()),
+      ),
       stores: HashMap::new(),
       executors: HashMap::new(),
-      logger, // listeners: Box::new(HashMap::new()),
+      logger,
     }
   }
 }
@@ -158,7 +164,6 @@ impl Schedule for Scheduler {
               Some(e) => {
                 // Only when measuring:
                 // get_elapsed_time(to_execute.start_time);
-                // TODO: Check Triggers
                 let (should_run, next) = to_execute.validate_triggers().await;
                 if (should_run) {
                   match (e.execute(&to_execute.job).await) {

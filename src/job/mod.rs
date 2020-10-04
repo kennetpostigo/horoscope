@@ -1,18 +1,19 @@
 pub mod network;
 pub mod sys;
 
-use crate::trigger::Trigger;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-#[derive(Clone, Debug)]
+use crate::trigger::Trigger;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Status {
-  Uninitialized,
+  Waiting,
   Running,
   Paused,
-  Retry,
   Success,
   Failure(String),
 }
@@ -20,19 +21,14 @@ pub enum Status {
 impl Status {
   pub fn to_string(&self) -> String {
     match self {
-      Status::Uninitialized => String::from("Uninitialized"),
+      Status::Waiting => String::from("Waiting"),
       Status::Running => String::from("Running"),
       Status::Paused => String::from("Paused"),
-      Status::Retry => String::from("Retry"),
       Status::Success => String::from("Success"),
       Status::Failure(_) => String::from("Failure"),
     }
   }
 }
-
-// Time Trigger
-// Ledger Trigger
-// User-defined Triggerß
 
 #[async_trait]
 pub trait Work: Send + Sync {
@@ -56,7 +52,6 @@ pub struct Job {
 }
 
 impl Job {
-  // TODO: figure out how to default recurring to 0
   pub fn new(
     alias: String,
     executor: String,
@@ -66,7 +61,7 @@ impl Job {
     job: Box<dyn Work>,
   ) -> Job {
     Job {
-      state: Status::Uninitialized,
+      state: Status::Waiting,
       alias,
       executor,
       start_time,
@@ -101,15 +96,18 @@ impl Job {
     (should_run, next)
   }
 
+  // TODO: Implement Modify Job
   pub fn modify_job(&mut self) -> Result<(), String> {
     Ok(())
   }
 
+  // TODO: Implement Pause Job
   pub fn pause_job(&mut self) -> Result<(), String> {
     self.state = Status::Paused;
     Ok(())
   }
 
+  // TODO: Implement Resume Job
   pub fn resume_job(&mut self) -> Result<(), String> {
     self.state = Status::Running;
     Ok(())

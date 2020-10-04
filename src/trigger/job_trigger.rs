@@ -21,9 +21,8 @@ impl trigger::Fire for Trigger {
       &self.status,
       &self.time,
     ) {
-      Ok(true) => true,
-      Ok(false) => false,
-      Err(_e) => false,
+      true => true,
+      false => false,
     }
   }
 

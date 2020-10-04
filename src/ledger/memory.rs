@@ -1,17 +1,27 @@
+use crate::job::Status;
+use crate::ledger::History;
 use chrono::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use crate::job::Status;
-use crate::ledger::History;
-
-#[derive(Clone, Debug)]
-struct Ledger {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Ledger {
   data: HashMap<
     String,
     HashMap<String, HashMap<String, Vec<(String, String, Status, i64)>>>,
   >,
+  ts: Vec<(String, String, Status, i64)>,
+}
+
+impl Ledger {
+  pub fn new() -> Self {
+    Ledger {
+      data: HashMap::new(),
+      ts: vec![],
+    }
+  }
 }
 
 impl History for Ledger {
@@ -21,7 +31,10 @@ impl History for Ledger {
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<(), String> {
+  ) {
+    self
+      .ts
+      .push((store.clone(), job.clone(), status.clone(), time.clone()));
     match self.data.entry(store.clone()) {
       Entry::Occupied(mut sentry) => {
         let store_map = sentry.get_mut();
@@ -37,7 +50,6 @@ impl History for Ledger {
                   status.clone(),
                   time.clone(),
                 ));
-                Ok(())
               }
               Entry::Vacant(entry) => {
                 entry.insert(vec![(
@@ -46,7 +58,6 @@ impl History for Ledger {
                   status.clone(),
                   time.clone(),
                 )]);
-                Ok(())
               }
             }
           }
@@ -57,7 +68,6 @@ impl History for Ledger {
               vec![(store.clone(), job.clone(), status.clone(), time.clone())],
             );
             entry.insert(status_map);
-            Ok(())
           }
         }
       }
@@ -70,7 +80,6 @@ impl History for Ledger {
         );
         job_map.insert(job.clone(), status_map);
         entry.insert(job_map);
-        Ok(())
       }
     }
   }
@@ -81,7 +90,7 @@ impl History for Ledger {
     job: &String,
     status: &Status,
     time: &i64,
-  ) -> Result<bool, String> {
+  ) -> bool {
     let now = Utc::now().timestamp_nanos();
     match self.data.entry(store.clone()) {
       Entry::Occupied(mut sentry) => {
@@ -99,15 +108,15 @@ impl History for Ledger {
                     break;
                   }
                 }
-                Ok(contains)
+                contains
               }
-              Entry::Vacant(_entry) => Ok(false),
+              Entry::Vacant(_entry) => false,
             }
           }
-          Entry::Vacant(_entry) => Ok(false),
+          Entry::Vacant(_entry) => false,
         }
       }
-      Entry::Vacant(_entry) => Ok(false),
+      Entry::Vacant(_entry) => false,
     }
   }
 
