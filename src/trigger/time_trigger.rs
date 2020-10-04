@@ -63,7 +63,11 @@ impl trigger::Fire for Trigger {
     let run: bool = self.should_run().await;
 
     if run {
-      self.interval.clone()
+      let now = Utc::now().timestamp_nanos();
+      match self.interval.clone() {
+        Some(interval) => Some(now + interval),
+        None => None
+      }
     } else {
       None
     }

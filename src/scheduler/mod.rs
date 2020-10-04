@@ -71,7 +71,7 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
   let mut schdlr = scheduler;
   let (s, r) = async_channel::unbounded();
   let (s_cpy, r_cpy) = (s.clone(), r.clone());
-  let mut interval = stream::interval(Duration::from_micros(50));
+  let mut interval = stream::interval(Duration::from_nanos(50));
 
   task::spawn(async move {
     let (sender, reader) = (s_cpy, r_cpy);

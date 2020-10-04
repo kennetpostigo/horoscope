@@ -1,6 +1,7 @@
 pub mod and_trigger;
 pub mod job_trigger;
 pub mod or_trigger;
+pub mod retry_trigger;
 pub mod time_trigger;
 
 use async_trait::async_trait;

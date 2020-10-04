@@ -173,7 +173,7 @@ needs to run, the data it holds is:
 The ledger module is responsible for keeping a history of the events that occur 
 while the scheduler is running.
 
-## Stuct `Ledger`
+### Stuct `Ledger`
 
 The `Ledger` struct in this file is a wrapper around a type that implements the
 `History` trait. However it has additional data fields around it that make it
@@ -186,9 +186,8 @@ remote database.
 
 1. Figure out a way to cleanly implement change status
 2. Create a loop in ledger that is ran every couple MS to sync the local `DB`
-3. Implement `retry_trigger.rs`
-4. Implement `listeners`/`event` system
-5. Start building out a testsuite
-6. Generate API Documentation with cargo
-7. Library website similar to async that has notes/guides and link to generated 
+3. Implement `listeners`/`event` system
+4. Start building out a testsuite
+5. Generate API Documentation with cargo
+6. Library website similar to async that has notes/guides and link to generated 
 api docs
