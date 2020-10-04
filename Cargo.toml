@@ -2,6 +2,7 @@
 name = "horoscope"
 version = "0.0.1"
 authors = ["Kennet Postigo <kennetfpostigo@gmail.com>", "Jonathan Beltran <jbelt021@fiu.edu>"]
+description = "The all knowing scheduler"
 edition = "2018"
 license = "MIT"
 
