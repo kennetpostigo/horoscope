@@ -12,8 +12,7 @@ use std::fmt;
 use std::time::Duration;
 
 use crate::executor::Executor;
-use crate::job::{Job, Status, Work};
-use crate::ledger::History;
+use crate::job::{Work};
 use crate::store::Silo;
 
 #[derive(Clone, Debug)]
