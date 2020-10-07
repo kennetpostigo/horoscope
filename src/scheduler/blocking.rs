@@ -24,14 +24,10 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-  pub fn new(logger: Option<Logger>) -> Self {
+  pub fn new(id: String, logger: Option<Logger>) -> Self {
     Scheduler {
       state: SchedulerState::Uninitialized,
-      ledger: Ledger::new(
-        // TODO: Generate this randomly or add it as a param
-        String::from("ledger"),
-        Box::new(memory::Ledger::new()),
-      ),
+      ledger: Ledger::new(id, Box::new(memory::Ledger::new())),
       stores: HashMap::new(),
       executors: HashMap::new(),
       logger,
@@ -158,6 +154,7 @@ impl Schedule for Scheduler {
       match cpy.store.get_due_jobs() {
         Ok(ready) => {
           for to_execute in ready {
+            
             let executioner = self.executors.get(&to_execute.executor);
             match executioner {
               None => println!("NOTHING GOING ON"),

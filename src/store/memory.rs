@@ -11,7 +11,6 @@ use crate::store::Silo;
 pub struct Store {
   pub alias: String,
   pub jobs: HashMap<String, Job>,
-  // logger
 }
 
 impl Store {
