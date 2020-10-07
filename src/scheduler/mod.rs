@@ -11,9 +11,9 @@ use futures::{select, FutureExt};
 use std::fmt;
 use std::time::Duration;
 
-use crate::ledger::History;
 use crate::executor::Executor;
 use crate::job::{Job, Status, Work};
+use crate::ledger::History;
 use crate::store::Silo;
 
 #[derive(Clone, Debug)]
@@ -160,15 +160,4 @@ pub trait Schedule: Send + Sync {
   fn remove_executor(&mut self, alias: &String) -> Result<(), String>;
 
   fn vclone(&self) -> Box<dyn Schedule>;
-}
-
-pub fn change_job_status(
-  ledger: &mut Box<dyn History>,
-  store: &String,
-  job: &mut Job,
-  status: &Status,
-  time: &i64,
-) {
-  job.state = status.clone();
-  ledger.insert(store, &job.alias.clone(), status, time);
 }

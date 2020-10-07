@@ -28,7 +28,8 @@ async fn main() {
   };
 
   let logger = Logger::new(true, vec![]);
-  let mut blk_scheduler = blocking::Scheduler::new(Some(logger));
+  let mut blk_scheduler =
+    blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
 
   let store = Store::new(String::from("jobStore-test"));
   let exec = Executor::new(String::from("executor-test"));
