@@ -31,6 +31,7 @@ impl Status {
 }
 
 #[async_trait]
+#[typetag::serde(tag = "type")]
 pub trait Work: Send + Sync {
   async fn startup(&self) -> Result<(), String>;
 
@@ -41,6 +42,7 @@ pub trait Work: Send + Sync {
   fn vclone(&self) -> Box<dyn Work>;
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Job {
   pub state: Status,
   pub alias: String,

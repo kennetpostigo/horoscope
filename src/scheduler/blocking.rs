@@ -1,6 +1,7 @@
 use async_channel::{Receiver, Sender};
 use async_trait::async_trait;
 use colored::*;
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -11,10 +12,10 @@ use crate::job::Work;
 use crate::ledger::{memory, Ledger};
 use crate::logger::Logger;
 use crate::scheduler::{Msg, Schedule, SchedulerState};
-use crate::store::{Silo, Store};
+use crate::store::Store;
 // type Listener = Box<dyn Fn(Event) -> ()>;
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Scheduler {
   pub state: SchedulerState,
   pub ledger: Ledger,
@@ -36,6 +37,7 @@ impl Scheduler {
 }
 
 #[async_trait]
+#[typetag::serde]
 impl Schedule for Scheduler {
   fn startup(&mut self) {
     println!(
@@ -151,10 +153,9 @@ impl Schedule for Scheduler {
   async fn check_jobs(&mut self) {
     for (_key, value) in &mut self.stores {
       let cpy = &mut value.clone();
-      match cpy.store.get_due_jobs() {
+      match cpy.get_due_jobs() {
         Ok(ready) => {
           for to_execute in ready {
-            
             let executioner = self.executors.get(&to_execute.executor);
             match executioner {
               None => println!("NOTHING GOING ON"),
@@ -186,7 +187,7 @@ impl Schedule for Scheduler {
                     to_execute.start_time = v;
                   }
                 } else {
-                  match value.store.remove_job(&to_execute.alias) {
+                  match value.remove_job(&to_execute.alias) {
                     Ok(_v) => {
                       if let Some(logger) = &self.logger {
                         logger.info(format!(
@@ -218,13 +219,13 @@ impl Schedule for Scheduler {
   async fn add_store(
     &mut self,
     alias: String,
-    store: Box<dyn Silo>,
+    store: Store,
   ) -> Result<(), String> {
-    let mut store = Store::new(alias.clone(), store);
+    let mut store = store;
 
-    match store.store.startup().await {
+    match store.startup().await {
       Ok(_) => match self.stores.entry(alias.clone()) {
-        Entry::Occupied(_entry) => match store.store.teardown() {
+        Entry::Occupied(_entry) => match store.teardown() {
           Ok(_) => {
             Err(format!("store alias {} already exists in stores", &alias))
           }
@@ -254,9 +255,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        store
-          .store
-          .add_job(alias, executor, start_time, end_time, job)
+        store.add_job(alias, executor, start_time, end_time, job)
       }
       Entry::Vacant(_entry) => {
         Err(format!("Store {} is not found in stores", &store_alias))
@@ -291,7 +290,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        match store.store.teardown() {
+        match store.teardown() {
           Ok(_) => match self.stores.remove(alias) {
             Some(_) => Ok(()),
             None => {
@@ -313,7 +312,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        store.store.modify_job(&alias)
+        store.modify_job(&alias)
       }
       Entry::Vacant(_entry) => {
         Err(format!("Store {} was not found in stores", &store_alias))
@@ -329,7 +328,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        store.store.pause_job(alias)
+        store.pause_job(alias)
       }
       Entry::Vacant(_entry) => {
         Err(format!("Store {} was not found in stores", &store_alias))
@@ -345,7 +344,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        store.store.resume_job(alias)
+        store.resume_job(alias)
       }
       Entry::Vacant(_entry) => {
         Err(format!("Store {} was not found in stores", &store_alias))
@@ -361,7 +360,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
-        store.store.remove_job(&alias)
+        store.remove_job(&alias)
       }
       Entry::Vacant(_entry) => {
         Err(format!("Store {} was not found in stores", &store_alias))
@@ -389,6 +388,24 @@ impl Schedule for Scheduler {
         &alias
       )),
     }
+  }
+
+  fn load_snapshot(&mut self, snapshot: Vec<u8>) {
+    let schdlr: Result<Scheduler, bincode::Error> =
+      bincode::deserialize(&snapshot);
+    match schdlr {
+      Ok(v) => {
+        self.stores = v.stores;
+        self.ledger = v.ledger;
+        self.executors = v.executors;
+        self.logger = v.logger;
+      }
+      Err(_) => {}
+    }
+  }
+
+  fn snapshot(&self) -> Vec<u8> {
+    bincode::serialize(&self).unwrap()
   }
 
   fn vclone(&self) -> Box<dyn Schedule> {

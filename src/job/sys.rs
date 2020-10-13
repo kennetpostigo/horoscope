@@ -1,10 +1,11 @@
 use async_process::Command;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use colored::*;
 
 use crate::job::{Status, Work};
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Job {
   pub alias: String,
   pub script: String,
@@ -22,6 +23,7 @@ impl Job {
 }
 
 #[async_trait]
+#[typetag::serde]
 impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
     println!(

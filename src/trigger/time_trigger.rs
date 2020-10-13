@@ -1,10 +1,11 @@
 use async_trait::async_trait;
 use chrono::prelude::*;
 use chrono::Utc;
+use serde::{Serialize, Deserialize}; 
 
 use crate::trigger;
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Day {
   Mon,
   Tue,
@@ -15,7 +16,7 @@ pub enum Day {
   Sun,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Time(u32, u32);
 
 fn day_to_chrono_day(day: &Day) -> Weekday {
@@ -30,7 +31,7 @@ fn day_to_chrono_day(day: &Day) -> Weekday {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct Trigger {
   interval: Option<i64>,
   day: Option<Day>,
@@ -38,6 +39,7 @@ struct Trigger {
 }
 
 #[async_trait]
+#[typetag::serde]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     let now = Utc::now();

@@ -5,14 +5,17 @@ pub mod retry_trigger;
 pub mod time_trigger;
 
 use async_trait::async_trait;
+use serde::{Serialize, Deserialize}; 
 use std::fmt::Debug;
 
+#[derive(Serialize, Deserialize)]
 pub struct Trigger {
   pub alias: String,
   pub trigger: Box<dyn Fire>,
 }
 
 #[async_trait]
+#[typetag::serde(tag = "type")]
 pub trait Fire: Send + Sync {
   async fn should_run(&mut self) -> bool;
 

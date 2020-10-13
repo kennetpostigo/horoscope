@@ -6,7 +6,7 @@ use horoscope::executor::Executor;
 use horoscope::job::network::{Job, NetType};
 use horoscope::logger::Logger;
 use horoscope::scheduler::{blocking, daemon, Msg, Schedule};
-use horoscope::store::memory::Store;
+use horoscope::store::Store;
 
 #[async_std::main]
 async fn main() {
@@ -33,7 +33,7 @@ async fn main() {
   );
 
   blk_scheduler
-    .add_store(String::from("jobStore-test"), Box::new(store))
+    .add_store(String::from("jobStore-test"), store)
     .await
     .unwrap();
   blk_scheduler
@@ -52,8 +52,6 @@ async fn main() {
 
   let (sender, _reader) = daemon(Box::new(blk_scheduler));
 
-  // sender.send(Msg::AddExecutor(String::from("trigger"), Box::new(exec)));
-
   match sender
     .send(Msg::Log(
       String::from("some id"),
@@ -65,18 +63,6 @@ async fn main() {
     Ok(_u) => (),
     Err(_err) => (),
   };
-
-  // sender
-  //     .send(Msg::AddStore(
-  //         String::from("jobStore-test"),
-  //         Box::new(store),
-  //     ))
-  //     .await
-  //     .unwrap();
-  // sender
-  //     .send(Msg::AddExecutor(String::from("executor-test"), exec))
-  //     .await
-  //     .unwrap();
 
   let njob2 = Job::new(
     String::from("job-2"),

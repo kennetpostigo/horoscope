@@ -10,12 +10,13 @@ use chrono::prelude::*;
 use futures::{select, FutureExt};
 use std::fmt;
 use std::time::Duration;
+use serde::{Deserialize, Serialize};
 
 use crate::executor::Executor;
 use crate::job::{Work};
-use crate::store::Silo;
+use crate::store::Store;
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SchedulerState {
   Uninitialized,
   Running,
@@ -32,6 +33,7 @@ impl fmt::Display for SchedulerState {
   }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Msg {
   // Scheduler Messages
   // ------------------------------------------------------------------------
@@ -40,7 +42,7 @@ pub enum Msg {
   RemoveExecutor(String),
 
   // Store Msgs
-  AddStore(String, Box<dyn Silo>),
+  AddStore(String, Store),
   // ModifyStore(String, String),
   RemoveStore(String),
 
@@ -96,6 +98,7 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
 }
 
 #[async_trait]
+#[typetag::serde(tag = "type")]
 pub trait Schedule: Send + Sync {
   async fn proxy(
     &mut self,
@@ -111,7 +114,7 @@ pub trait Schedule: Send + Sync {
   async fn add_store(
     &mut self,
     alias: String,
-    store: Box<dyn Silo>,
+    store: Store,
   ) -> Result<(), String>;
 
   fn add_job(
@@ -157,6 +160,10 @@ pub trait Schedule: Send + Sync {
   ) -> Result<(), String>;
 
   fn remove_executor(&mut self, alias: &String) -> Result<(), String>;
+
+  fn load_snapshot(&mut self, snapshot: Vec<u8>);
+
+  fn snapshot(&self) -> Vec<u8>;
 
   fn vclone(&self) -> Box<dyn Schedule>;
 }

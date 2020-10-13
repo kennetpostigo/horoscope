@@ -188,6 +188,5 @@ remote database.
 2. Create a loop in ledger that is ran every couple MS to sync the local `DB`
 3. Implement `listeners`/`event` system
 4. Start building out a testsuite
-5. Generate API Documentation with cargo
-6. Library website similar to async that has notes/guides and link to generated 
+5. Library website similar to async that has notes/guides and link to generated 
 api docs

@@ -1,7 +1,8 @@
 use crate::job::{Status, Work};
+use serde::{Serialize, Deserialize};
 use colored::*;
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Executor {
   alias: String,
 }

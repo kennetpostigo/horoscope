@@ -1,13 +1,15 @@
 use crate::trigger;
 use async_trait::async_trait;
+use serde::{Serialize, Deserialize}; 
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize,Clone, Debug)]
 struct Trigger {
   left: trigger::Trigger,
   right: trigger::Trigger,
 }
 
 #[async_trait]
+#[typetag::serde]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     self.left.trigger.should_run().await

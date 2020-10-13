@@ -8,11 +8,11 @@ use std::fmt::Debug;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Ledger {
-  data: HashMap<
+  pub data: HashMap<
     String,
     HashMap<String, HashMap<String, Vec<(String, String, Status, i64)>>>,
   >,
-  ts: Vec<(String, String, Status, i64)>,
+  pub ts: Vec<(String, String, Status, i64)>,
 }
 
 impl Ledger {
@@ -24,6 +24,7 @@ impl Ledger {
   }
 }
 
+#[typetag::serde]
 impl History for Ledger {
   fn insert(
     &mut self,

@@ -1,15 +1,17 @@
 use async_trait::async_trait;
 use chrono::Utc;
+use serde::{Serialize, Deserialize}; 
 
 use crate::trigger;
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct Trigger {
   attempts: i32,
   run: i32,
 }
 
 #[async_trait]
+#[typetag::serde]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     if (&self.attempts < &self.run) {

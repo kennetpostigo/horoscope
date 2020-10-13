@@ -1,9 +1,11 @@
 pub mod memory;
 
 use std::fmt::Debug;
+use serde::{Serialize, Deserialize}; 
 
 use crate::job::Status;
 
+#[derive(Serialize, Deserialize)]
 pub struct Ledger {
   pub alias: String,
   pub ledger: Box<dyn History>,
@@ -18,6 +20,7 @@ impl Ledger {
   }
 }
 
+#[typetag::serde(tag = "type")]
 pub trait History: Send + Sync {
   fn insert(
     &mut self,
