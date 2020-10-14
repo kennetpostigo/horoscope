@@ -390,9 +390,20 @@ impl Schedule for Scheduler {
     }
   }
 
-  fn load_snapshot(&mut self, snapshot: Vec<u8>) {
-    let schdlr: Result<Scheduler, bincode::Error> =
-      bincode::deserialize(&snapshot);
+  fn create_snapshot(&mut self) -> Vec<u8> {
+    bincode::serialize(&self).unwrap()
+  }
+
+  fn save_snapshot(&mut self) {
+    let snap = self.create_snapshot();
+    let db = sled::open("horo").unwrap();
+    db.insert("scope", snap);
+  }
+
+  fn load_snapshot_from_disk(&mut self) {
+    let db = sled::open("horo").unwrap();
+    let disk_snap = db.get("scope").unwrap().unwrap();
+    let schdlr: bincode::Result<Scheduler> = bincode::deserialize(&disk_snap);
     match schdlr {
       Ok(v) => {
         self.stores = v.stores;
@@ -404,8 +415,18 @@ impl Schedule for Scheduler {
     }
   }
 
-  fn snapshot(&self) -> Vec<u8> {
-    bincode::serialize(&self).unwrap()
+  fn load_snapshot_from_mem(&mut self, snapshot: Vec<u8>) {
+    let schdlr: bincode::Result<Scheduler> =
+      bincode::deserialize(&snapshot);
+    match schdlr {
+      Ok(v) => {
+        self.stores = v.stores;
+        self.ledger = v.ledger;
+        self.executors = v.executors;
+        self.logger = v.logger;
+      }
+      Err(_) => {}
+    }
   }
 
   fn vclone(&self) -> Box<dyn Schedule> {

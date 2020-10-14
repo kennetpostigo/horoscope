@@ -8,12 +8,12 @@ use async_std::task;
 use async_trait::async_trait;
 use chrono::prelude::*;
 use futures::{select, FutureExt};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::time::Duration;
-use serde::{Deserialize, Serialize};
 
 use crate::executor::Executor;
-use crate::job::{Work};
+use crate::job::Work;
 use crate::store::Store;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -161,9 +161,13 @@ pub trait Schedule: Send + Sync {
 
   fn remove_executor(&mut self, alias: &String) -> Result<(), String>;
 
-  fn load_snapshot(&mut self, snapshot: Vec<u8>);
+  fn create_snapshot(&mut self) -> Vec<u8>;
 
-  fn snapshot(&self) -> Vec<u8>;
+  fn save_snapshot(&mut self);
+
+  fn load_snapshot_from_disk(&mut self);
+
+  fn load_snapshot_from_mem(&mut self, snapshot: Vec<u8>);
 
   fn vclone(&self) -> Box<dyn Schedule>;
 }
