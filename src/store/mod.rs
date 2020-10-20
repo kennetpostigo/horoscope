@@ -102,7 +102,7 @@ impl Store {
     Ok(())
   }
 
-  // TODO: Implement this
+  // TODO: Implement modify_job
   pub fn modify_job(&mut self, _alias: &String) -> Result<(), String> {
     Ok(())
   }

@@ -22,6 +22,8 @@ async fn main() {
   let mut blk_scheduler =
     blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
 
+  blk_scheduler.load_snapshot_from_disk();
+
   let store = Store::new(String::from("jobStore-test"));
   let exec = Executor::new(String::from("executor-test"));
   let njob = Job::new(
@@ -73,6 +75,8 @@ async fn main() {
   );
 
   task::sleep(Duration::from_secs(3)).await;
+
+  sender.send(Msg::Snapshot).await.unwrap();
 
   sender
     .send(Msg::AddJob(

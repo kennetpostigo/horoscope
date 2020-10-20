@@ -37,6 +37,9 @@ impl fmt::Display for SchedulerState {
 pub enum Msg {
   // Scheduler Messages
   // ------------------------------------------------------------------------
+  LoadFromDisk,
+  LoadFromSnapshot(Vec<u8>),
+  Snapshot,
   // Executor Msgs:
   AddExecutor(String, Executor),
   RemoveExecutor(String),

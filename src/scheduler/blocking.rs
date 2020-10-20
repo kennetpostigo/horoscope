@@ -58,6 +58,9 @@ impl Schedule for Scheduler {
   ) {
     match self.logger.clone() {
       Some(logger) => match msg {
+        Msg::LoadFromDisk => self.load_snapshot_from_disk(),
+        Msg::LoadFromSnapshot(snap) => self.load_snapshot_from_mem(snap),
+        Msg::Snapshot => self.save_snapshot(),
         Msg::AddExecutor(alias, exctr) => match self
           .add_executor(alias.clone(), exctr)
         {
@@ -396,28 +399,32 @@ impl Schedule for Scheduler {
 
   fn save_snapshot(&mut self) {
     let snap = self.create_snapshot();
-    let db = sled::open("horo").unwrap();
-    db.insert("scope", snap);
+    let db = sled::open("./horo").unwrap();
+    db.insert("scope", snap).unwrap();
   }
 
   fn load_snapshot_from_disk(&mut self) {
-    let db = sled::open("horo").unwrap();
-    let disk_snap = db.get("scope").unwrap().unwrap();
-    let schdlr: bincode::Result<Scheduler> = bincode::deserialize(&disk_snap);
-    match schdlr {
-      Ok(v) => {
-        self.stores = v.stores;
-        self.ledger = v.ledger;
-        self.executors = v.executors;
-        self.logger = v.logger;
+    let db = sled::open("./horo").unwrap();
+    let disk_snap = db.get("scope").unwrap();
+    match disk_snap {
+      Some(snap) => {
+        let schdlr: bincode::Result<Scheduler> = bincode::deserialize(&snap);
+        match schdlr {
+          Ok(v) => {
+            self.stores = v.stores;
+            self.ledger = v.ledger;
+            self.executors = v.executors;
+            self.logger = v.logger;
+          }
+          Err(_) => {}
+        }
       }
-      Err(_) => {}
+      None => {}
     }
   }
 
   fn load_snapshot_from_mem(&mut self, snapshot: Vec<u8>) {
-    let schdlr: bincode::Result<Scheduler> =
-      bincode::deserialize(&snapshot);
+    let schdlr: bincode::Result<Scheduler> = bincode::deserialize(&snapshot);
     match schdlr {
       Ok(v) => {
         self.stores = v.stores;

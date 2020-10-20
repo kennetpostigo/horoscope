@@ -184,9 +184,8 @@ remote database.
 
 ## Checklist
 
-1. Figure out a way to cleanly implement change status
-2. Create a loop in ledger that is ran every couple MS to sync the local `DB`
-3. Implement `listeners`/`event` system
-4. Start building out a testsuite
-5. Library website similar to async that has notes/guides and link to generated 
+1. Create a loop in ledger that is ran every couple MS to sync the local `DB`
+2. Implement `listeners`/`event` system
+3. Start building out a testsuite
+4. Library website similar to async that has notes/guides and link to generated 
 api docs
