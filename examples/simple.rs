@@ -76,8 +76,6 @@ async fn main() {
 
   task::sleep(Duration::from_secs(3)).await;
 
-  sender.send(Msg::Snapshot).await.unwrap();
-
   sender
     .send(Msg::AddJob(
       String::from("job-2"),

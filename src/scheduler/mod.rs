@@ -75,7 +75,7 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
   let mut schdlr = scheduler;
   let (s, r) = async_channel::unbounded();
   let (s_cpy, r_cpy) = (s.clone(), r.clone());
-  let mut interval = stream::interval(Duration::from_nanos(50));
+  let mut interval = stream::interval(Duration::from_millis(5));
 
   task::spawn(async move {
     let (sender, reader) = (s_cpy, r_cpy);
@@ -90,7 +90,14 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
           },
           i = interval.next().fuse() => {
               match i {
-                  Some(_) => schdlr.check_jobs().await,
+                  Some(_) => {
+                    schdlr.check_jobs().await;
+                    if (schdlr.is_dirty()) {
+                      println!("Saving snapshot");
+                      schdlr.save_snapshot();
+                      schdlr.set_dirty(false);
+                    }
+                  },
                   None => println!("Nothing in interval hit")
               }
           }
@@ -113,6 +120,10 @@ pub trait Schedule: Send + Sync {
   fn startup(&mut self);
 
   async fn check_jobs(&mut self);
+
+  fn is_dirty(&self) -> bool;
+
+  fn set_dirty(&mut self, next: bool);
 
   async fn add_store(
     &mut self,

@@ -22,6 +22,7 @@ pub struct Scheduler {
   pub stores: HashMap<String, Store>,
   pub executors: HashMap<String, Executor>,
   pub logger: Option<Logger>,
+  pub dirty: bool,
 }
 
 impl Scheduler {
@@ -32,6 +33,7 @@ impl Scheduler {
       stores: HashMap::new(),
       executors: HashMap::new(),
       logger,
+      dirty: false,
     }
   }
 }
@@ -161,10 +163,8 @@ impl Schedule for Scheduler {
           for to_execute in ready {
             let executioner = self.executors.get(&to_execute.executor);
             match executioner {
-              None => println!("NOTHING GOING ON"),
+              None => (),
               Some(e) => {
-                // Only when measuring:
-                // get_elapsed_time(to_execute.start_time);
                 let (should_run, next) = to_execute.validate_triggers().await;
                 if (should_run) {
                   match (e.execute(&to_execute.job).await) {
@@ -188,6 +188,7 @@ impl Schedule for Scheduler {
                 if let Some(v) = next {
                   if (should_run) {
                     to_execute.start_time = v;
+                    self.dirty = true;
                   }
                 } else {
                   match value.remove_job(&to_execute.alias) {
@@ -197,12 +198,14 @@ impl Schedule for Scheduler {
                           "REMOVING JOB {} FROM STORE {} SUCCEEDED",
                           &to_execute.alias,
                           &value.clone().alias
-                        ))
+                        ));
+                        self.dirty = true;
                       }
                     }
                     Err(e) => {
                       if let Some(logger) = &self.logger {
-                        logger.err(e)
+                        logger.err(e);
+                        self.dirty = true;
                       }
                     }
                   };
@@ -217,6 +220,14 @@ impl Schedule for Scheduler {
         ),
       }
     }
+  }
+
+  fn is_dirty(&self) -> bool {
+    self.dirty.clone()
+  }
+
+  fn set_dirty(&mut self, next: bool) {
+    self.dirty = next;
   }
 
   async fn add_store(
@@ -238,6 +249,7 @@ impl Schedule for Scheduler {
           )),
         },
         Entry::Vacant(entry) => {
+          self.dirty = true;
           entry.insert(store);
           Ok(())
         }
@@ -258,6 +270,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
+        self.dirty = true;
         store.add_job(alias, executor, start_time, end_time, job)
       }
       Entry::Vacant(_entry) => {
@@ -282,6 +295,7 @@ impl Schedule for Scheduler {
         },
         Entry::Vacant(entry) => {
           entry.insert(executor);
+          self.dirty = true;
           Ok(())
         }
       },
@@ -295,7 +309,10 @@ impl Schedule for Scheduler {
         let store = entry.get_mut();
         match store.teardown() {
           Ok(_) => match self.stores.remove(alias) {
-            Some(_) => Ok(()),
+            Some(_) => {
+              self.dirty = true;
+              Ok(())
+            }
             None => {
               Err(String::from("Failed to remove store from scheduler stores"))
             }
@@ -315,6 +332,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
+        self.dirty = true;
         store.modify_job(&alias)
       }
       Entry::Vacant(_entry) => {
@@ -331,6 +349,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
+        self.dirty = true;
         store.pause_job(alias)
       }
       Entry::Vacant(_entry) => {
@@ -347,6 +366,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
+        self.dirty = true;
         store.resume_job(alias)
       }
       Entry::Vacant(_entry) => {
@@ -363,6 +383,7 @@ impl Schedule for Scheduler {
     match self.stores.entry(store_alias.clone()) {
       Entry::Occupied(mut entry) => {
         let store = entry.get_mut();
+        self.dirty = true;
         store.remove_job(&alias)
       }
       Entry::Vacant(_entry) => {
@@ -377,7 +398,10 @@ impl Schedule for Scheduler {
         let exctr = entry.get_mut();
         match exctr.teardown() {
           Ok(_) => match self.executors.remove(alias) {
-            Some(_v) => Ok(()),
+            Some(_v) => {
+              self.dirty = true;
+              Ok(())
+            }
             None => Err(format!(
               "Executor alias {} failed to remove the executor",
               &alias

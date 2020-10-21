@@ -184,8 +184,12 @@ remote database.
 
 ## Checklist
 
-1. Create a loop in ledger that is ran every couple MS to sync the local `DB`
-2. Implement `listeners`/`event` system
-3. Start building out a testsuite
+1. Implement `listeners`/`event` system
+2. Start building out a testsuite
+3. Examples:
+    - Running in a server
+    - Examples with all the triggers
+    - Examples with all job types
+    - Examples with custom userland jobs
 4. Library website similar to async that has notes/guides and link to generated 
 api docs
