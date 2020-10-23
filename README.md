@@ -12,8 +12,8 @@
 
 <div align="center">
    <!-- CI status -->
-  <a href="https://github.com/hyperfuse/horoscope/actions">
-    <img src="https://github.com/hyperfuse-rs/horoscope/workflows/CI/badge.svg"
+  <a href="https://github.com/kennetpostigo/horoscope/actions">
+    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg"
       alt="CI Status" />
   </a>
   <!-- Crates version -->
