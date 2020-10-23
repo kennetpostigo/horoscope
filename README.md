@@ -13,8 +13,7 @@
 <div align="center">
    <!-- CI status -->
   <a href="https://github.com/kennetpostigo/horoscope/actions">
-    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg"
-      alt="CI Status" />
+    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg" alt="CI Badge"/>
   </a>
   <!-- Crates version -->
   <a href="https://crates.io/crates/horoscope">
@@ -55,7 +54,7 @@ provides functionality out the box and is easily extensible.
 - **Fast:** horoscope runs magnitudes faster than schedulers built in other
   languages that are mainstream. stream, horoscope runs magnitudes faster
 - **Concurrent:** executors run jobs in their own tasks in order to get as much
-work done as fast as possible.
+  work done as fast as possible.
 - **Intuitive:** You get a lot of powerful functionality out of the box to run
   CRON, Network tasks, retrieve jobs from memory, pg, and redis. If they are not
   what you are looking for, Implement your own Job, Trigger, Store, or Executor.
