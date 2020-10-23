@@ -100,3 +100,37 @@ fn off_test() {
     assert_equal!(counter, 1, "Emit should do nothing after off");
   });
 }
+
+#[test]
+fn off_with_multi_listener_test() {
+  task::block_on(async {
+    let (w, r) = unbounded();
+    let mut emitter = EventEmitter::new();
+    let mut counter: i32 = 0;
+    let (w2, w3) = (w.clone(), w.clone());
+
+    let listener = emitter.on(String::from("increment"), move |_v: ()| {
+      task::block_on(async { w2.send("increment").await.unwrap() })
+    });
+
+    emitter.on(String::from("increment"), move |_v: ()| {
+      task::block_on(async {
+        w3.send("increment").await.unwrap();
+        w3.send("increment").await.unwrap();
+      })
+    });
+
+    emitter.emit(String::from("increment"), ()).await;
+    emitter.off(listener);
+    emitter.emit(String::from("increment"), ()).await;
+
+    while !r.is_empty() {
+      match r.recv().await {
+        Ok("increment") => counter = counter + 1,
+        _ => (),
+      }
+    }
+
+    assert_equal!(counter, 5, "Emit should do nothing after off");
+  });
+}
