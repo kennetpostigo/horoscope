@@ -31,5 +31,3 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
-      - name: rust-grcov
-        uses: actions-rs/grcov@v0.1.5
