@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use colored::*;
+use serde::{Deserialize, Serialize};
 
 use crate::job::{Status, Work};
 
@@ -56,9 +56,14 @@ impl Work for Job {
   async fn func(&self) -> Status {
     match &self.method {
       NetType::Get => match surf::get(&self.url).await {
-        Ok(_msg) => {
-          // println!("Network Job Response Status: {}", msg.status());
-          Status::Success
+        Ok(msg) => {
+          println!("Network Job Response Status: {}", msg.status());
+          if (msg.status().is_server_error() || msg.status().is_client_error())
+          {
+            return Status::Failure(String::from("Unable to complete request"));
+          } else {
+            return Status::Success;
+          }
         }
         Err(_) => Status::Failure(String::from("Unable to complete request")),
       },
