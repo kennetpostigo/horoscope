@@ -13,11 +13,11 @@
 <div align="center">
    <!-- CI status -->
   <a href="https://github.com/kennetpostigo/horoscope/actions">
-    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg" alt="CI Badge"/>
+    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg?style=flat-square" alt="CI Badge"/>
   </a>
   <!-- Coverage % -->
   <a href="https://codecov.io/gh/kennetpostigo/horoscope">
-    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/main/graph/badge.svg?token=XW3IOH1XIG"/>
+    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/main/graph/badge.svg?token=XW3IOH1XIG&style=flat-square"/>
   </a>
   <!-- Crates version -->
   <a href="https://crates.io/crates/horoscope">
