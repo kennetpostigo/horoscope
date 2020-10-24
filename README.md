@@ -13,25 +13,25 @@
 <div align="center">
    <!-- CI status -->
   <a href="https://github.com/kennetpostigo/horoscope/actions">
-    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg?style=flat-square" alt="CI Badge"/>
+    <img src="https://github.com/kennetpostigo/horoscope/workflows/CI/badge.svg?style=flat" alt="CI Badge"/>
   </a>
   <!-- Coverage % -->
   <a href="https://codecov.io/gh/kennetpostigo/horoscope">
-    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/main/graph/badge.svg?token=XW3IOH1XIG&style=flat-square"/>
+    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/main/graph/badge.svg?token=XW3IOH1XIG&style=flat"/>
   </a>
   <!-- Crates version -->
   <a href="https://crates.io/crates/horoscope">
-    <img src="https://img.shields.io/crates/v/horoscope.svg?style=flat-square"
+    <img src="https://img.shields.io/crates/v/horoscope.svg?style=flat"
     alt="Crates.io version" />
   </a>
   <!-- Downloads -->
   <a href="https://crates.io/crates/horoscope">
-    <img src="https://img.shields.io/crates/d/horoscope.svg?style=flat-square"
+    <img src="https://img.shields.io/crates/d/horoscope.svg?style=flat"
       alt="Download" />
   </a>
   <!-- docs.rs docs -->
   <a href="https://docs.rs/horoscope">
-    <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
+    <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat"
       alt="docs.rs docs" />
   </a>
 </div>
