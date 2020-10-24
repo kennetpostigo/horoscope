@@ -17,7 +17,7 @@
   </a>
   <!-- Coverage % -->
   <a href="https://codecov.io/gh/kennetpostigo/horoscope">
-    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/patina/graph/badge.svg?token=XW3IOH1XIG"/>
+    <img src="https://codecov.io/gh/kennetpostigo/horoscope/branch/main/graph/badge.svg?token=XW3IOH1XIG"/>
   </a>
   <!-- Crates version -->
   <a href="https://crates.io/crates/horoscope">
