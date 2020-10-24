@@ -98,7 +98,7 @@ impl Work for Job {
     }
   }
 
-  async fn teardown(&self) -> Result<String, String> {
+  async fn teardown(&self) -> Result<(), String> {
     println!(
       "{}{}{}",
       "::::   Tearing Down Network Job "
@@ -108,7 +108,7 @@ impl Work for Job {
       self.alias.truecolor(0, 0, 0).bold().on_green(),
       "   ::::".truecolor(0, 0, 0).bold().on_green()
     );
-    Ok(String::from(""))
+    Ok(())
   }
 
   fn vclone(&self) -> Box<dyn Work> {

@@ -9,7 +9,7 @@ use std::fmt::Debug;
 
 use crate::trigger::Trigger;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub enum Status {
   Waiting,
   Running,
@@ -37,7 +37,7 @@ pub trait Work: Send + Sync {
 
   async fn func(&self) -> Status;
 
-  async fn teardown(&self) -> Result<String, String>;
+  async fn teardown(&self) -> Result<(), String>;
 
   fn vclone(&self) -> Box<dyn Work>;
 }
