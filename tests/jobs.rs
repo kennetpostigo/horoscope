@@ -1,12 +1,12 @@
 use async_std::task;
 use chrono::prelude::*;
-use horoscope::executor::Executor;
-use horoscope::job::network::NetType;
-use horoscope::job::{network, sys, Job, Status, Work};
-use horoscope::trigger::{test_trigger, Trigger};
 use k9::assert_equal;
 use mockito::mock;
 use std::collections::HashMap;
+
+use horoscope::job::network::NetType;
+use horoscope::job::{network, sys, Job, Status, Work};
+use horoscope::trigger::{test_trigger, Trigger};
 
 #[test]
 fn sys_job_startup_ok() {
@@ -213,6 +213,43 @@ fn job_add_trigger() {
 }
 
 #[test]
+fn job_remove_trigger() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    let trig =
+      test_trigger::Trigger::new(format!("triggy"), true, Some(start_time));
+
+    job
+      .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+      .unwrap();
+
+    job.remove_trigger(format!("triggy")).unwrap();
+
+    assert_equal!(job.triggers.len(), 0, "Job trigger added should have been removed");
+  });
+}
+
+#[test]
 fn job_validate_triggers() {
   task::block_on(async {
     let start_time = {
@@ -247,6 +284,75 @@ fn job_validate_triggers() {
       job.validate_triggers().await,
       (true, Some(start_time)),
       "Job trigger should have been added"
+    );
+  })
+}
+
+#[test]
+fn job_pause_job() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    job.pause_job().unwrap();
+
+    assert_equal!(
+      job.state,
+      Status::Paused,
+      "Job should be paused"
+    );
+  })
+}
+
+#[test]
+fn job_resume_job() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    job.pause_job().unwrap();
+    job.resume_job().unwrap();
+
+    assert_equal!(
+      job.state,
+      Status::Running,
+      "Job should be paused"
     );
   })
 }

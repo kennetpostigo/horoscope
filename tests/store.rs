@@ -1,8 +1,9 @@
 use async_std::task;
 use chrono::prelude::*;
+use k9::assert_equal;
+
 use horoscope::job::sys::Job;
 use horoscope::store::Store;
-use k9::assert_equal;
 
 #[test]
 fn store_alias_check() {

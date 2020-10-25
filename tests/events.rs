@@ -1,7 +1,8 @@
 use async_channel::unbounded;
 use async_std::task;
-use horoscope::event::EventEmitter;
 use k9::assert_equal;
+
+use horoscope::event::EventEmitter;
 
 #[test]
 fn emit_test() {

@@ -127,7 +127,7 @@ impl Job {
     }
   }
 
-  pub fn remove_trigger(mut self, trigger_alias: String) -> Result<(), String> {
+  pub fn remove_trigger(&mut self, trigger_alias: String) -> Result<(), String> {
     match self.triggers.entry(trigger_alias.clone()) {
       Entry::Occupied(e) => {
         e.remove();
