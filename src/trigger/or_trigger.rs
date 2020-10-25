@@ -3,7 +3,8 @@ use async_trait::async_trait;
 use serde::{Serialize, Deserialize}; 
 
 #[derive(Serialize, Deserialize,Clone, Debug)]
-struct Trigger {
+pub struct Trigger {
+  alias: String,
   left: trigger::Trigger,
   right: trigger::Trigger,
 }

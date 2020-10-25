@@ -1,24 +1,30 @@
 use crate::trigger;
 use async_trait::async_trait;
 use serde::{Serialize, Deserialize}; 
+use chrono::prelude::*;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize,Clone, Debug)]
 pub struct Trigger {
   alias: String,
-  left: trigger::Trigger,
-  right: trigger::Trigger,
+  should: bool,
+  next: Option<i64>
+}
+
+impl Trigger {
+  pub fn new(alias: String, should: bool, next: Option<i64>) -> Self {
+    Trigger { alias, should, next }
+  }
 }
 
 #[async_trait]
 #[typetag::serde]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
-    self.left.trigger.should_run().await
-      && self.right.trigger.should_run().await
+    self.should
   }
 
   async fn next(&mut self) -> Option<i64> {
-    None
+    self.next
   }
 
   fn vclone(&self) -> Box<dyn trigger::Fire> {

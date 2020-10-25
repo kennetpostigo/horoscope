@@ -32,7 +32,8 @@ fn day_to_chrono_day(day: &Day) -> Weekday {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct Trigger {
+pub struct Trigger {
+  alias: String,
   interval: Option<i64>,
   day: Option<Day>,
   time: Option<Time>,

@@ -1,9 +1,12 @@
 use async_std::task;
 use chrono::prelude::*;
+use horoscope::executor::Executor;
 use horoscope::job::network::NetType;
-use horoscope::job::{network, sys, Status, Work};
+use horoscope::job::{network, sys, Job, Status, Work};
+use horoscope::trigger::{test_trigger, Trigger};
 use k9::assert_equal;
 use mockito::mock;
+use std::collections::HashMap;
 
 #[test]
 fn sys_job_startup_ok() {
@@ -143,4 +146,107 @@ fn net_job_teardown_ok() {
 
     assert_equal!(job.teardown().await, Ok(()), "Teardown should be ok");
   });
+}
+
+#[test]
+fn job_creation() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = 10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    assert_equal!(&job.alias, &format!("jobby"), "Jobs alias should match");
+    assert_equal!(&job.executor, &format!("exo"), "Job executor should match");
+    assert_equal!(&job.start_time, &start_time, "job start_time should match");
+    assert_equal!(&job.end_time, &None, "Job end_time should match");
+    assert_equal!(job.triggers.len(), 0, "Should be no triggers")
+  });
+}
+
+#[test]
+fn job_add_trigger() {
+  let start_time = {
+    let now = Utc::now().timestamp_nanos();
+    let delay: i64 = 10000000000;
+    now + delay
+  };
+
+  let sjob = sys::Job::new(
+    String::from("jobby"),
+    String::from("echo"),
+    vec![format!("test")],
+  );
+
+  let mut job = Job::new(
+    String::from("jobby"),
+    String::from("exo"),
+    start_time,
+    None,
+    HashMap::new(),
+    Box::new(sjob),
+  );
+
+  let trig = test_trigger::Trigger::new(format!("triggy"), true, None);
+
+  job
+    .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+    .unwrap();
+
+  assert_equal!(job.triggers.len(), 1, "Job trigger should have been added");
+}
+
+#[test]
+fn job_validate_triggers() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    let trig =
+      test_trigger::Trigger::new(format!("triggy"), true, Some(start_time));
+
+    job
+      .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+      .unwrap();
+
+    assert_equal!(
+      job.validate_triggers().await,
+      (true, Some(start_time)),
+      "Job trigger should have been added"
+    );
+  })
 }

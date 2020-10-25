@@ -2,16 +2,23 @@ pub mod and_trigger;
 pub mod job_trigger;
 pub mod or_trigger;
 pub mod retry_trigger;
+pub mod test_trigger;
 pub mod time_trigger;
 
 use async_trait::async_trait;
-use serde::{Serialize, Deserialize}; 
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 #[derive(Serialize, Deserialize)]
 pub struct Trigger {
   pub alias: String,
   pub trigger: Box<dyn Fire>,
+}
+
+impl Trigger {
+  pub fn new(alias: String, trigger: Box<dyn Fire>) -> Self {
+    Trigger { alias, trigger }
+  }
 }
 
 #[async_trait]

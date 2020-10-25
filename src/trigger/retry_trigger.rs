@@ -5,7 +5,8 @@ use serde::{Serialize, Deserialize};
 use crate::trigger;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct Trigger {
+pub struct Trigger {
+  alias: String,
   attempts: i32,
   run: i32,
 }
