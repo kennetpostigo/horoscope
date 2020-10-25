@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use chrono::prelude::*;
 use chrono::Utc;
-use serde::{Serialize, Deserialize}; 
+use serde::{Deserialize, Serialize};
 
-use crate::trigger;
+use crate::trigger::Fire;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Day {
@@ -16,10 +16,22 @@ pub enum Day {
   Sun,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Time(u32, u32);
+pub fn cycle_day(day: Day) -> Day {
+  match day {
+    Day::Mon => Day::Tue,
+    Day::Tue => Day::Wed,
+    Day::Wed => Day::Thu,
+    Day::Thu => Day::Fri,
+    Day::Fri => Day::Sat,
+    Day::Sat => Day::Sun,
+    Day::Sun => Day::Mon,
+  }
+}
 
-fn day_to_chrono_day(day: &Day) -> Weekday {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Time(pub u32, pub u32);
+
+pub fn day_to_chrono_day(day: &Day) -> Weekday {
   match day {
     Day::Mon => Weekday::Mon,
     Day::Tue => Weekday::Tue,
@@ -31,6 +43,23 @@ fn day_to_chrono_day(day: &Day) -> Weekday {
   }
 }
 
+pub fn chrono_day_to_day(day: Weekday) -> Day {
+  match day {
+    Weekday::Mon => Day::Mon,
+    Weekday::Tue => Day::Tue,
+    Weekday::Wed => Day::Wed,
+    Weekday::Thu => Day::Thu,
+    Weekday::Fri => Day::Fri,
+    Weekday::Sat => Day::Sat,
+    Weekday::Sun => Day::Sun,
+  }
+}
+
+pub fn get_today() -> Day {
+  let now = chrono::Utc::now();
+  chrono_day_to_day(now.weekday())
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Trigger {
   alias: String,
@@ -39,14 +68,40 @@ pub struct Trigger {
   time: Option<Time>,
 }
 
+impl Trigger {
+  pub fn new(
+    alias: String,
+    interval: Option<i64>,
+    day: Option<Day>,
+    time: Option<Time>,
+  ) -> Self {
+    Trigger {
+      alias,
+      interval,
+      day,
+      time,
+    }
+  }
+}
+
+#[derive(PartialEq)]
+enum DateTimeMatch {
+  Match,
+  MisMatch,
+  Nothing,
+}
+
 #[async_trait]
 #[typetag::serde]
-impl trigger::Fire for Trigger {
+impl Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     let now = Utc::now();
     let day_match = match &self.day {
-      Some(d) => now.weekday() == day_to_chrono_day(d),
-      None => true,
+      Some(d) => match now.weekday() == day_to_chrono_day(d) {
+        true => DateTimeMatch::Match,
+        false => DateTimeMatch::MisMatch,
+      },
+      None => DateTimeMatch::Nothing,
     };
 
     let time_match = match &self.time {
@@ -54,12 +109,25 @@ impl trigger::Fire for Trigger {
         let hour = now.hour();
         let min = now.minute();
 
-        &min == m && &hour == h
+        match &min == m && &hour == h {
+          true => DateTimeMatch::Match,
+          false => DateTimeMatch::MisMatch,
+        }
       }
-      None => true,
+      None => DateTimeMatch::Nothing,
     };
 
-    day_match && time_match
+    match (day_match, time_match) {
+      (DateTimeMatch::Match, DateTimeMatch::Match) => true,
+      (DateTimeMatch::Match, DateTimeMatch::MisMatch) => false,
+      (DateTimeMatch::Match, DateTimeMatch::Nothing) => true,
+      (DateTimeMatch::MisMatch, DateTimeMatch::Match) => false,
+      (DateTimeMatch::MisMatch, DateTimeMatch::MisMatch) => false,
+      (DateTimeMatch::MisMatch, DateTimeMatch::Nothing) => false,
+      (DateTimeMatch::Nothing, DateTimeMatch::Match) => true,
+      (DateTimeMatch::Nothing, DateTimeMatch::MisMatch) => false,
+      (DateTimeMatch::Nothing, DateTimeMatch::Nothing) => false,
+    }
   }
 
   async fn next(&mut self) -> Option<i64> {
@@ -69,14 +137,14 @@ impl trigger::Fire for Trigger {
       let now = Utc::now().timestamp_nanos();
       match self.interval.clone() {
         Some(interval) => Some(now + interval),
-        None => None
+        None => None,
       }
     } else {
       None
     }
   }
 
-  fn vclone(&self) -> Box<dyn trigger::Fire> {
+  fn vclone(&self) -> Box<dyn Fire> {
     Box::new(self.clone())
   }
 }
