@@ -76,6 +76,19 @@ fn emit_with_multi_listenertest() {
 }
 
 #[test]
+fn on_test() {
+  task::block_on(async {
+    let mut emitter = EventEmitter::new();
+
+    assert_equal!(
+      emitter.on(String::from("increment"), move |_v: ()| { () }),
+      1,
+      "Should return an event listener id"
+    );
+  });
+}
+
+#[test]
 fn off_test() {
   task::block_on(async {
     let (w, r) = unbounded();
