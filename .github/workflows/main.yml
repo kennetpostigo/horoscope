@@ -17,8 +17,9 @@ jobs:
       - name: Install toolchain and rustfmt
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: nightly
+          override: true
+          profile: minimal
           components: rustfmt
       
       - name: Execute tests
