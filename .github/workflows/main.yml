@@ -40,14 +40,12 @@ jobs:
       - name: Gather coverage data
         id: coverage
         uses: actions-rs/grcov@v0.1
-        with:
-          output-path: "./lcov.info"
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v1.0.2
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          file: "./lcov.info"
+          file: ./home/user/build/lcov.info
 
       # - name: Archive code coverage results
       #   uses: actions/upload-artifact@v1
