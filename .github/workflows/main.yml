@@ -26,24 +26,23 @@ jobs:
         with: 
           command: build
 
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
+      - name: Pre-installing grcov
+        uses: actions-rs/install@v0.1
         with:
-          command: test
+          crate: grcov
+          use-tool-cache: true
 
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          version: '0.15.0'
-          args: '-- --test-threads 1'
+      - name: Gather coverage data
+        id: coverage
+        uses: actions-rs/grcov@v0.1
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v1.0.2
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v1
-        with:
-          name: code-coverage-report
-          path: cobertura.xml
+      # - name: Archive code coverage results
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: code-coverage-report
+      #     path: cobertura.xml
