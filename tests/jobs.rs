@@ -6,8 +6,8 @@ use std::collections::HashMap;
 
 use horoscope::job::network::NetType;
 use horoscope::job::{network, sys, Job, Status, Work};
+use horoscope::ledger::{memory, Ledger};
 use horoscope::trigger::{test_trigger, Trigger};
-use horoscope::ledger::{Ledger, memory};
 #[test]
 fn sys_job_startup_ok() {
   task::block_on(async {
@@ -213,6 +213,43 @@ fn job_add_trigger() {
 }
 
 #[test]
+fn job_add_trigger_with_existing_alias() {
+  let start_time = {
+    let now = Utc::now().timestamp_nanos();
+    let delay: i64 = 10000000000;
+    now + delay
+  };
+
+  let sjob = sys::Job::new(
+    String::from("jobby"),
+    String::from("echo"),
+    vec![format!("test")],
+  );
+
+  let mut job = Job::new(
+    String::from("jobby"),
+    String::from("exo"),
+    start_time,
+    None,
+    HashMap::new(),
+    Box::new(sjob),
+  );
+
+  let trig = test_trigger::Trigger::new(format!("triggy"), true, None);
+  let trig_2 = trig.clone();
+
+  job
+    .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+    .unwrap();
+
+  assert_equal!(
+    job.add_trigger(Trigger::new(format!("triggy"), Box::new(trig_2))),
+    Err(format!("Trigger triggy already exists")),
+    "Job trigger should have been added"
+  );
+}
+
+#[test]
 fn job_remove_trigger() {
   task::block_on(async {
     let start_time = {
@@ -249,6 +286,38 @@ fn job_remove_trigger() {
       job.triggers.len(),
       0,
       "Job trigger added should have been removed"
+    );
+  });
+}
+
+#[test]
+fn job_remove_nonexisting_trigger() {
+  task::block_on(async {
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    assert_equal!(
+      job.remove_trigger(format!("triggy")),
+      Err(format!("Trigger triggy doesn't exists")),
+      "Job trigger that doesn't exist should result in an error"
     );
   });
 }
