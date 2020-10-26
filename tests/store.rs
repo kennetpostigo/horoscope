@@ -3,6 +3,7 @@ use chrono::prelude::*;
 use k9::assert_equal;
 
 use horoscope::job::sys::Job;
+use horoscope::job::Status;
 use horoscope::store::Store;
 
 #[test]
@@ -90,6 +91,76 @@ fn store_remove_job() {
     store.remove_job(&String::from("one")).unwrap();
 
     assert_equal!(store.jobs.len(), 0, "Store should no job")
+  });
+}
+
+#[test]
+fn store_pause_job() {
+  task::block_on(async {
+    let mut store = Store::new(String::from("exa"));
+
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = 10000000000;
+      let start_time = now + delay;
+      // println!("{}\n{}", now, now + delay);
+      start_time
+    };
+
+    let job = Job::new(String::from("job-1"), String::from("ls"), vec![]);
+
+    store
+      .add_job(
+        String::from("one"),
+        String::from("exec-one"),
+        start_time,
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    store.pause_job(String::from("one")).unwrap();
+    assert_equal!(
+      &store.jobs.get(&format!("one")).unwrap().state,
+      &Status::Paused,
+      "Store should no job"
+    );
+  });
+}
+
+#[test]
+fn store_resume_job() {
+  task::block_on(async {
+    let mut store = Store::new(String::from("exa"));
+
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = 10000000000;
+      let start_time = now + delay;
+      // println!("{}\n{}", now, now + delay);
+      start_time
+    };
+
+    let job = Job::new(String::from("job-1"), String::from("ls"), vec![]);
+
+    store
+      .add_job(
+        String::from("one"),
+        String::from("exec-one"),
+        start_time,
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    store.pause_job(String::from("one")).unwrap();
+    store.resume_job(format!("one")).unwrap();
+
+    assert_equal!(
+      &store.jobs.get(&format!("one")).unwrap().state,
+      &Status::Running,
+      "Store should no job"
+    );
   });
 }
 

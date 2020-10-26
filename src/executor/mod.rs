@@ -4,7 +4,7 @@ use colored::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Executor {
-  alias: String,
+  pub alias: String,
 }
 
 impl Executor {
