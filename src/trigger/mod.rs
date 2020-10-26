@@ -9,6 +9,8 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
+use crate::ledger::Ledger;
+
 #[derive(Serialize, Deserialize)]
 pub struct Trigger {
   pub alias: String,
@@ -25,6 +27,12 @@ impl Trigger {
 #[typetag::serde(tag = "type")]
 pub trait Fire: Send + Sync {
   async fn should_run(&mut self) -> bool;
+
+  async fn should_run_with_ledger(&mut self, ledger: &mut Ledger) -> bool;
+
+  fn needs_ledger(&self) -> bool {
+    false
+  }
 
   async fn next(&mut self) -> Option<i64>;
 

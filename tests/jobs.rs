@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use horoscope::job::network::NetType;
 use horoscope::job::{network, sys, Job, Status, Work};
 use horoscope::trigger::{test_trigger, Trigger};
-
+use horoscope::ledger::{Ledger, memory};
 #[test]
 fn sys_job_startup_ok() {
   task::block_on(async {
@@ -245,13 +245,19 @@ fn job_remove_trigger() {
 
     job.remove_trigger(format!("triggy")).unwrap();
 
-    assert_equal!(job.triggers.len(), 0, "Job trigger added should have been removed");
+    assert_equal!(
+      job.triggers.len(),
+      0,
+      "Job trigger added should have been removed"
+    );
   });
 }
 
 #[test]
 fn job_validate_triggers() {
   task::block_on(async {
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
     let start_time = {
       let now = Utc::now().timestamp_nanos();
       let delay: i64 = -10000000000;
@@ -281,7 +287,7 @@ fn job_validate_triggers() {
       .unwrap();
 
     assert_equal!(
-      job.validate_triggers().await,
+      job.validate_triggers(&mut ledg).await,
       (true, Some(start_time)),
       "Job trigger should have been added"
     );
@@ -314,11 +320,7 @@ fn job_pause_job() {
 
     job.pause_job().unwrap();
 
-    assert_equal!(
-      job.state,
-      Status::Paused,
-      "Job should be paused"
-    );
+    assert_equal!(job.state, Status::Paused, "Job should be paused");
   })
 }
 
@@ -349,10 +351,6 @@ fn job_resume_job() {
     job.pause_job().unwrap();
     job.resume_job().unwrap();
 
-    assert_equal!(
-      job.state,
-      Status::Running,
-      "Job should be paused"
-    );
+    assert_equal!(job.state, Status::Running, "Job should be paused");
   })
 }

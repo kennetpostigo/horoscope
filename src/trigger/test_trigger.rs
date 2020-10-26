@@ -1,17 +1,23 @@
-use crate::trigger;
 use async_trait::async_trait;
-use serde::{Serialize, Deserialize}; 
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize,Clone, Debug)]
+use crate::ledger::Ledger;
+use crate::trigger;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Trigger {
   alias: String,
   should: bool,
-  next: Option<i64>
+  next: Option<i64>,
 }
 
 impl Trigger {
   pub fn new(alias: String, should: bool, next: Option<i64>) -> Self {
-    Trigger { alias, should, next }
+    Trigger {
+      alias,
+      should,
+      next,
+    }
   }
 }
 
@@ -20,6 +26,10 @@ impl Trigger {
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     self.should
+  }
+
+  async fn should_run_with_ledger(&mut self, _ledger: &mut Ledger) -> bool {
+    panic!("trigger::test_trigger - DOES NOT REQUIRE LEDGER")
   }
 
   async fn next(&mut self) -> Option<i64> {

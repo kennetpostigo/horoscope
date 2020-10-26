@@ -2,7 +2,8 @@ use async_std::task;
 use chrono::prelude::*;
 use k9::assert_equal;
 
-use horoscope::job::sys::Job;
+use horoscope::job::Status;
+use horoscope::ledger::{memory, Ledger};
 use horoscope::trigger::{
   and_trigger, job_trigger, or_trigger, retry_trigger, time_trigger, Fire,
   Trigger,
@@ -119,5 +120,30 @@ fn time_trigger_should_run_fail_on_time_mismatch() {
       false,
       "Time Trigger should fail because of the time mismatch"
     )
+  });
+}
+
+#[test]
+fn job_trigger_should_run() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+    let mut jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time
+    );
+
+    &ledg.ledger.insert(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &time,
+    );
+
+    assert_equal!(jt.should_run_with_ledger(&mut ledg).await, true, "Job Trigger should run");
   });
 }

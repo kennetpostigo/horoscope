@@ -1,8 +1,9 @@
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+
 use crate::job::Status;
 use crate::ledger::Ledger;
 use crate::trigger;
-use async_trait::async_trait;
-use serde::{Serialize, Deserialize}; 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Trigger {
@@ -11,19 +12,38 @@ pub struct Trigger {
   store: String,
   status: Status,
   time: i64,
-  ledger: Ledger,
+}
+
+impl Trigger {
+  pub fn new(
+    alias: String,
+    job: String,
+    store: String,
+    status: Status,
+    time: i64,
+  ) -> Self {
+    Trigger {
+      alias,
+      job,
+      store,
+      status,
+      time,
+    }
+  }
 }
 
 #[async_trait]
 #[typetag::serde]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
-    match self.ledger.ledger.entry(
-      &self.store,
-      &self.job,
-      &self.status,
-      &self.time,
-    ) {
+    panic!("trigger::job_trigger - REQUIRES SHOULD_RUN")
+  }
+
+  async fn should_run_with_ledger(&mut self, ledger: &mut Ledger) -> bool {
+    match ledger
+      .ledger
+      .entry(&self.store, &self.job, &self.status, &self.time)
+    {
       true => true,
       false => false,
     }
@@ -31,6 +51,10 @@ impl trigger::Fire for Trigger {
 
   async fn next(&mut self) -> Option<i64> {
     None
+  }
+
+  fn needs_ledger(&self) -> bool {
+      true
   }
 
   fn vclone(&self) -> Box<dyn trigger::Fire> {

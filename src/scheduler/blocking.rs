@@ -165,7 +165,7 @@ impl Schedule for Scheduler {
             match executioner {
               None => (),
               Some(e) => {
-                let (should_run, next) = to_execute.validate_triggers().await;
+                let (should_run, next) = to_execute.validate_triggers(&mut self.ledger).await;
                 if (should_run) {
                   match (e.execute(&to_execute.job).await) {
                     Ok(_v) => {

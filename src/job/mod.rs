@@ -7,6 +7,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
+use crate::ledger::Ledger;
 use crate::trigger::Trigger;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
@@ -73,24 +74,45 @@ impl Job {
     }
   }
 
-  pub async fn validate_triggers(&mut self) -> (bool, Option<i64>) {
+  pub async fn validate_triggers(
+    &mut self,
+    ledger: &mut Ledger,
+  ) -> (bool, Option<i64>) {
     let mut should_run = true;
     let mut next = None;
     for (_, value) in &mut self.triggers {
       let trig = &mut value.trigger;
-      if !(trig.should_run().await) {
-        should_run = false;
-      } else {
-        match trig.next().await {
-          Some(v) => match next {
-            Some(curr) => {
-              if v < curr {
-                next = Some(v);
+      if trig.needs_ledger() {
+        if !(trig.should_run_with_ledger(ledger).await) {
+          should_run = false;
+        } else {
+          match trig.next().await {
+            Some(v) => match next {
+              Some(curr) => {
+                if v < curr {
+                  next = Some(v);
+                }
               }
-            }
-            None => next = Some(v),
-          },
-          None => (),
+              None => next = Some(v),
+            },
+            None => (),
+          }
+        }
+      } else {
+        if !(trig.should_run().await) {
+          should_run = false;
+        } else {
+          match trig.next().await {
+            Some(v) => match next {
+              Some(curr) => {
+                if v < curr {
+                  next = Some(v);
+                }
+              }
+              None => next = Some(v),
+            },
+            None => (),
+          }
         }
       }
     }
@@ -127,7 +149,10 @@ impl Job {
     }
   }
 
-  pub fn remove_trigger(&mut self, trigger_alias: String) -> Result<(), String> {
+  pub fn remove_trigger(
+    &mut self,
+    trigger_alias: String,
+  ) -> Result<(), String> {
     match self.triggers.entry(trigger_alias.clone()) {
       Entry::Occupied(e) => {
         e.remove();

@@ -4,6 +4,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 use crate::trigger::Fire;
+use crate::ledger::Ledger;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Day {
@@ -128,6 +129,10 @@ impl Fire for Trigger {
       (DateTimeMatch::Nothing, DateTimeMatch::MisMatch) => false,
       (DateTimeMatch::Nothing, DateTimeMatch::Nothing) => false,
     }
+  }
+
+  async fn should_run_with_ledger(&mut self, _ledger: &mut Ledger) -> bool {
+    panic!("trigger::time_trigger - DOES NOT REQUIRE LEDGER")
   }
 
   async fn next(&mut self) -> Option<i64> {
