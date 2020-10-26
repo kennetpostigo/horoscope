@@ -103,6 +103,19 @@ fn off_test() {
 }
 
 #[test]
+fn noop_off_test() {
+  task::block_on(async {
+    let mut emitter = EventEmitter::new();
+
+    assert_equal!(
+      emitter.off(1),
+      None,
+      "Off shouldn't do anything if passed non-existant listener"
+    );
+  });
+}
+
+#[test]
 fn off_with_multi_listener_test() {
   task::block_on(async {
     let (w, r) = unbounded();

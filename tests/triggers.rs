@@ -134,7 +134,7 @@ fn job_trigger_should_run() {
       format!("job"),
       format!("store"),
       Status::Waiting,
-      time
+      time,
     );
 
     &ledg.ledger.insert(
@@ -144,6 +144,10 @@ fn job_trigger_should_run() {
       &time,
     );
 
-    assert_equal!(jt.should_run_with_ledger(&mut ledg).await, true, "Job Trigger should run");
+    assert_equal!(
+      jt.should_run_with_ledger(&mut ledg).await,
+      true,
+      "Job Trigger should run"
+    );
   });
 }
