@@ -233,6 +233,92 @@ fn time_trigger_should_run_fail_on_nothing_time_mismatch() {
   });
 }
 
+#[should_panic(expected = "trigger::time_trigger - DOES NOT REQUIRE LEDGER")]
+#[test]
+fn time_trigger_should_panic_with_ledger() {
+  task::block_on(async {
+    let now = Utc::now();
+
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      None,
+      None,
+      Some(time_trigger::Time(now.hour() + 1, now.minute() + 1)),
+    );
+
+    let mut ledg =
+    Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
+    assert_equal!(
+      tt.should_run_with_ledger(&mut ledg).await,
+      false,
+      "Time Trigger should fail because it doesn't require ledger"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_next_some() {
+  task::block_on(async {
+    let now = Utc::now();
+
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      Some(5),
+      None,
+      Some(time_trigger::Time(now.hour(), now.minute())),
+    );
+
+    assert_equal!(
+      tt.next().await != None,
+      true,
+      "Time Trigger next should result in Some(interval) with interval"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_next_none() {
+  task::block_on(async {
+    let now = Utc::now();
+
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      None,
+      None,
+      Some(time_trigger::Time(now.hour(), now.minute())),
+    );
+
+    assert_equal!(
+      tt.next().await,
+      None,
+      "Time Trigger next should result in None without interval"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_next_mismatch() {
+  task::block_on(async {
+    let now = Utc::now();
+
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      Some(5),
+      None,
+      Some(time_trigger::Time(now.hour() + 1, now.minute() + 1)),
+    );
+
+    assert_equal!(
+      tt.next().await,
+      None,
+      "Time Trigger next should result in None without interval"
+    )
+  });
+}
+
+
+
 #[test]
 fn job_trigger_should_run() {
   task::block_on(async {
