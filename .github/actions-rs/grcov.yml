@@ -2,8 +2,8 @@ branch: true
 ignore-not-existing: true
 llvm: true
 filter: covered
-output-type: lcov
-output-path: ./lcov.info
+output-type: gcov
+output-path: ./gcov.info
 prefix-dir: /home/user/build/
 ignore:
   - "/*"
