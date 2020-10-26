@@ -21,10 +21,14 @@ jobs:
           toolchain: nightly
           components: rustfmt
       
-      - name: Run cargo build
+      - name: Execute tests
         uses: actions-rs/cargo@v1
-        with: 
-          command: build
+        with:
+          command: test
+          args: --all
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
 
       - name: Pre-installing grcov
         uses: actions-rs/install@v0.1
