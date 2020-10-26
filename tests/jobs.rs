@@ -127,7 +127,7 @@ fn net_job_func_fail() {
 
     assert_equal!(
       job.func().await,
-      Status::Failure(String::from("Unable to complete request")),
+      Status::Failure(format!("Unable to complete request")),
       "func should run to success"
     );
   });

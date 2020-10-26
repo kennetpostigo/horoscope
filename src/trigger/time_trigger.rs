@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::trigger::Fire;
 use crate::ledger::Ledger;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum Day {
   Mon,
   Tue,

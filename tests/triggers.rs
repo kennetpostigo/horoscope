@@ -30,6 +30,60 @@ fn trigger_creation() {
 }
 
 #[test]
+fn chrono_to_day(){
+  let mon = chrono::Weekday::Mon;
+  let tue = chrono::Weekday::Tue;
+  let wed = chrono::Weekday::Wed;
+  let thu = chrono::Weekday::Thu;
+  let fri = chrono::Weekday::Fri;
+  let sat = chrono::Weekday::Sat;
+  let sun = chrono::Weekday::Sun;
+  assert_equal!(time_trigger::chrono_day_to_day(mon), time_trigger::Day::Mon);
+  assert_equal!(time_trigger::chrono_day_to_day(tue), time_trigger::Day::Tue);
+  assert_equal!(time_trigger::chrono_day_to_day(wed), time_trigger::Day::Wed);
+  assert_equal!(time_trigger::chrono_day_to_day(thu), time_trigger::Day::Thu);
+  assert_equal!(time_trigger::chrono_day_to_day(fri), time_trigger::Day::Fri);
+  assert_equal!(time_trigger::chrono_day_to_day(sat), time_trigger::Day::Sat);
+  assert_equal!(time_trigger::chrono_day_to_day(sun), time_trigger::Day::Sun);
+}
+
+#[test]
+fn day_to_chrono(){
+  let mon = &time_trigger::Day::Mon;
+  let tue = &time_trigger::Day::Tue;
+  let wed = &time_trigger::Day::Wed;
+  let thu = &time_trigger::Day::Thu;
+  let fri = &time_trigger::Day::Fri;
+  let sat = &time_trigger::Day::Sat;
+  let sun = &time_trigger::Day::Sun;
+  assert_equal!(time_trigger::day_to_chrono_day(mon), chrono::Weekday::Mon);
+  assert_equal!(time_trigger::day_to_chrono_day(tue), chrono::Weekday::Tue);
+  assert_equal!(time_trigger::day_to_chrono_day(wed), chrono::Weekday::Wed);
+  assert_equal!(time_trigger::day_to_chrono_day(thu), chrono::Weekday::Thu);
+  assert_equal!(time_trigger::day_to_chrono_day(fri), chrono::Weekday::Fri);
+  assert_equal!(time_trigger::day_to_chrono_day(sat), chrono::Weekday::Sat);
+  assert_equal!(time_trigger::day_to_chrono_day(sun), chrono::Weekday::Sun);
+}
+
+#[test]
+fn cycle_day(){
+  let mon = time_trigger::Day::Mon;
+  let tue = time_trigger::Day::Tue;
+  let wed = time_trigger::Day::Wed;
+  let thu = time_trigger::Day::Thu;
+  let fri = time_trigger::Day::Fri;
+  let sat = time_trigger::Day::Sat;
+  let sun = time_trigger::Day::Sun;
+  assert_equal!(time_trigger::cycle_day(mon), time_trigger::Day::Tue);
+  assert_equal!(time_trigger::cycle_day(tue), time_trigger::Day::Wed);
+  assert_equal!(time_trigger::cycle_day(wed), time_trigger::Day::Thu);
+  assert_equal!(time_trigger::cycle_day(thu), time_trigger::Day::Fri);
+  assert_equal!(time_trigger::cycle_day(fri), time_trigger::Day::Sat);
+  assert_equal!(time_trigger::cycle_day(sat), time_trigger::Day::Sun);
+  assert_equal!(time_trigger::cycle_day(sun), time_trigger::Day::Mon);
+}
+
+#[test]
 fn time_trigger_should_run_with_day() {
   task::block_on(async {
     let mut tt = time_trigger::Trigger::new(
@@ -119,6 +173,62 @@ fn time_trigger_should_run_fail_on_time_mismatch() {
       tt.should_run().await,
       false,
       "Time Trigger should fail because of the time mismatch"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_should_run_fail_on_day_time_mismatch() {
+  task::block_on(async {
+    let now = Utc::now();
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      None,
+      Some(time_trigger::cycle_day(time_trigger::get_today())),
+      Some(time_trigger::Time(now.hour() + 1, now.minute() + 1)),
+    );
+
+    assert_equal!(
+      tt.should_run().await,
+      false,
+      "Time Trigger should fail because of the day & time mismatch"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_should_run_fail_on_day_mismatch_nothing() {
+  task::block_on(async {
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      None,
+      Some(time_trigger::cycle_day(time_trigger::get_today())),
+      None,
+    );
+
+    assert_equal!(
+      tt.should_run().await,
+      false,
+      "Time Trigger should fail because of the day mismatch and nothing time"
+    )
+  });
+}
+
+#[test]
+fn time_trigger_should_run_fail_on_nothing_time_mismatch() {
+  task::block_on(async {
+    let now = Utc::now();
+    let mut tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      None,
+      None,
+      Some(time_trigger::Time(now.hour() + 1, now.minute() + 1)),
+    );
+
+    assert_equal!(
+      tt.should_run().await,
+      false,
+      "Time Trigger should fail because of the nothing and time mismatch"
     )
   });
 }
