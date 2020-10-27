@@ -320,7 +320,7 @@ fn time_trigger_next_mismatch() {
 
 
 #[test]
-fn job_trigger_should_run() {
+fn job_trigger_should_run_with_ledger() {
   task::block_on(async {
     let time = Utc::now().timestamp_nanos();
     let mut ledg =
@@ -344,6 +344,65 @@ fn job_trigger_should_run() {
       jt.should_run_with_ledger(&mut ledg).await,
       true,
       "Job Trigger should run"
+    );
+  });
+}
+
+#[should_panic(expected = "trigger::job_trigger - REQUIRES SHOULD_RUN")]
+#[test]
+fn job_trigger_should_run() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+    let mut jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time,
+    );
+
+    &ledg.ledger.insert(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &time,
+    );
+
+    assert_equal!(
+      jt.should_run().await,
+      true,
+      "Job Trigger should_run should panic"
+    );
+  });
+}
+
+#[test]
+fn job_trigger_next() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+    let mut jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time,
+    );
+
+    &ledg.ledger.insert(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &time,
+    );
+
+    assert_equal!(
+      jt.next().await,
+      None,
+      "Job Trigger next"
     );
   });
 }
