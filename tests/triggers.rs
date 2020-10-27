@@ -591,3 +591,103 @@ fn and_trigger_next() {
     assert_equal!(at.next().await, None, "And Trigger should always give None");
   })
 }
+
+#[test]
+fn or_trigger_should_run() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(ot.should_run().await, true, "Or Trigger should run");
+  });
+}
+
+#[test]
+fn or_trigger_should_run_with_half() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), false, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(ot.should_run().await, true, "Or Trigger should run");
+  });
+}
+
+#[test]
+fn or_trigger_should_not_run() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), false, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), false, None)),
+    );
+
+    let mut ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(ot.should_run().await, false, "Or Trigger should not run");
+  });
+}
+
+#[should_panic(
+  expected = "trigger::or_trigger - DOES NOT REQUIRE LEDGER"
+)]
+#[test]
+fn or_trigger_should_run_with_ledger() {
+  task::block_on(async {
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(
+      ot.should_run_with_ledger(&mut ledg).await,
+      false,
+      "Or Trigger can't run with ledger"
+    );
+  })
+}
+
+#[test]
+fn or_trigger_next() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(ot.next().await, None, "Or Trigger should always give None");
+  })
+}
