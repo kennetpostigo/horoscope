@@ -2,29 +2,22 @@ use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::trigger;
 use crate::ledger::Ledger;
+use crate::trigger;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Trigger {
   alias: String,
   attempts: i32,
   run: i32,
-  requires_ledger: bool,
 }
 
 impl Trigger {
-  pub fn new(
-    alias: String,
-    attempts: i32,
-    run: i32,
-    requires_ledger: bool,
-  ) -> Self {
+  pub fn new(alias: String, run: i32) -> Self {
     Trigger {
       alias,
-      attempts,
+      attempts: 0,
       run,
-      requires_ledger,
     }
   }
 }
@@ -42,7 +35,7 @@ impl trigger::Fire for Trigger {
   }
 
   async fn should_run_with_ledger(&mut self, _ledger: &mut Ledger) -> bool {
-      panic!("trigger::retry_trigger - DOES NOT REQUIRE LEDGER")
+    panic!("trigger::retry_trigger - DOES NOT REQUIRE LEDGER")
   }
 
   async fn next(&mut self) -> Option<i64> {

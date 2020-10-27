@@ -431,3 +431,32 @@ fn job_trigger_needs_ledger() {
     assert_equal!(jt.needs_ledger(), true, "Job Trigger should need ledger");
   });
 }
+
+#[test]
+fn retry_trigger_should_run() {
+  task::block_on(async {
+    let mut rt = retry_trigger::Trigger::new(format!("triggy"), 3);
+
+    assert_equal!(
+      rt.should_run().await,
+      true,
+      "Retry Trigger should run on 1st attempt"
+    );
+    assert_equal!(
+      rt.should_run().await,
+      true,
+      "Retry Trigger should run on 2nd attempt"
+    );
+    assert_equal!(
+      rt.should_run().await,
+      true,
+      "Retry Trigger should run on 3rd attempt"
+    );
+
+    assert_equal!(
+      rt.should_run().await,
+      false,
+      "Retry Trigger should not run on 4th attempt"
+    );
+  });
+}
