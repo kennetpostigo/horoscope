@@ -30,7 +30,7 @@ fn trigger_creation() {
 }
 
 #[test]
-fn chrono_to_day(){
+fn chrono_to_day() {
   let mon = chrono::Weekday::Mon;
   let tue = chrono::Weekday::Tue;
   let wed = chrono::Weekday::Wed;
@@ -48,7 +48,7 @@ fn chrono_to_day(){
 }
 
 #[test]
-fn day_to_chrono(){
+fn day_to_chrono() {
   let mon = &time_trigger::Day::Mon;
   let tue = &time_trigger::Day::Tue;
   let wed = &time_trigger::Day::Wed;
@@ -66,7 +66,7 @@ fn day_to_chrono(){
 }
 
 #[test]
-fn cycle_day(){
+fn cycle_day() {
   let mon = time_trigger::Day::Mon;
   let tue = time_trigger::Day::Tue;
   let wed = time_trigger::Day::Wed;
@@ -247,7 +247,7 @@ fn time_trigger_should_panic_with_ledger() {
     );
 
     let mut ledg =
-    Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
 
     assert_equal!(
       tt.should_run_with_ledger(&mut ledg).await,
@@ -317,8 +317,6 @@ fn time_trigger_next_mismatch() {
   });
 }
 
-
-
 #[test]
 fn job_trigger_should_run_with_ledger() {
   task::block_on(async {
@@ -348,9 +346,8 @@ fn job_trigger_should_run_with_ledger() {
   });
 }
 
-#[should_panic(expected = "trigger::job_trigger - REQUIRES SHOULD_RUN")]
 #[test]
-fn job_trigger_should_run() {
+fn job_trigger_should_run_with_ledger_false() {
   task::block_on(async {
     let time = Utc::now().timestamp_nanos();
     let mut ledg =
@@ -363,11 +360,26 @@ fn job_trigger_should_run() {
       time,
     );
 
-    &ledg.ledger.insert(
-      &format!("store"),
-      &format!("job"),
-      &Status::Waiting,
-      &time,
+    assert_equal!(
+      jt.should_run_with_ledger(&mut ledg).await,
+      false,
+      "Job Trigger shouldn't run"
+    );
+  });
+}
+
+#[should_panic(expected = "trigger::job_trigger - REQUIRES SHOULD_RUN")]
+#[test]
+fn job_trigger_should_run() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+
+    let mut jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time,
     );
 
     assert_equal!(
@@ -399,10 +411,23 @@ fn job_trigger_next() {
       &time,
     );
 
-    assert_equal!(
-      jt.next().await,
-      None,
-      "Job Trigger next"
+    assert_equal!(jt.next().await, None, "Job Trigger next");
+  });
+}
+
+#[test]
+fn job_trigger_needs_ledger() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+
+    let jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time,
     );
+
+    assert_equal!(jt.needs_ledger(), true, "Job Trigger should need ledger");
   });
 }
