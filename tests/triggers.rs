@@ -5,8 +5,8 @@ use k9::assert_equal;
 use horoscope::job::Status;
 use horoscope::ledger::{memory, Ledger};
 use horoscope::trigger::{
-  and_trigger, job_trigger, or_trigger, retry_trigger, time_trigger, Fire,
-  Trigger,
+  and_trigger, job_trigger, or_trigger, retry_trigger, test_trigger,
+  time_trigger, Fire, Trigger,
 };
 
 #[test]
@@ -506,10 +506,88 @@ fn retry_trigger_next_fail() {
 
     rt.should_run().await;
 
-    assert_equal!(
-      rt.next().await,
-      None,
-      "Retry Trigger should fail with next"
-    );
+    assert_equal!(rt.next().await, None, "Retry Trigger should fail with next");
   });
+}
+
+#[test]
+fn and_trigger_should_run() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut at = and_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(at.should_run().await, true, "And Trigger should run");
+  });
+}
+
+#[test]
+fn and_trigger_should_not_run() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), false, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut at = and_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(at.should_run().await, false, "And Trigger shouldn't run");
+  });
+}
+
+#[should_panic(
+  expected = "trigger::and_trigger - DOES NOT REQUIRE SCHEDULER LEDGER"
+)]
+#[test]
+fn and_trigger_should_run_with_ledger() {
+  task::block_on(async {
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut at = and_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(
+      at.should_run_with_ledger(&mut ledg).await,
+      false,
+      "And Trigger can't run with ledger"
+    );
+  })
+}
+
+#[test]
+fn and_trigger_next() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let mut at = and_trigger::Trigger::new(format!("triggy"), left, right);
+
+    assert_equal!(at.next().await, None, "And Trigger should always give None");
+  })
 }
