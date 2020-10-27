@@ -447,6 +447,7 @@ fn retry_trigger_should_run() {
       true,
       "Retry Trigger should run on 2nd attempt"
     );
+
     assert_equal!(
       rt.should_run().await,
       true,
@@ -457,6 +458,58 @@ fn retry_trigger_should_run() {
       rt.should_run().await,
       false,
       "Retry Trigger should not run on 4th attempt"
+    );
+  });
+}
+
+#[should_panic(expected = "trigger::retry_trigger - DOES NOT REQUIRE LEDGER")]
+#[test]
+fn retry_trigger_should_run_with_ledger() {
+  task::block_on(async {
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+    let mut rt = retry_trigger::Trigger::new(format!("triggy"), 3);
+
+    assert_equal!(
+      rt.should_run_with_ledger(&mut ledg).await,
+      false,
+      "Retry Trigger should panic as it doesn't need the ledger"
+    );
+  });
+}
+
+#[test]
+fn retry_trigger_next() {
+  task::block_on(async {
+    let mut rt = retry_trigger::Trigger::new(format!("triggy"), 3);
+
+    rt.should_run().await;
+    assert_equal!(
+      rt.next().await != None,
+      true,
+      "Retry Trigger should succeed with next"
+    )
+  });
+}
+
+#[test]
+fn retry_trigger_next_fail() {
+  task::block_on(async {
+    let mut rt = retry_trigger::Trigger::new(format!("triggy"), 2);
+
+    rt.should_run().await;
+    assert_equal!(
+      rt.next().await != None,
+      true,
+      "Retry Trigger should succeed with next"
+    );
+
+    rt.should_run().await;
+
+    assert_equal!(
+      rt.next().await,
+      None,
+      "Retry Trigger should fail with next"
     );
   });
 }
