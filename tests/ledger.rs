@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use horoscope::job::Status;
 use horoscope::ledger::{memory, Ledger};
 
+#[test]
 pub fn ledger_creation() {
   let ml = memory::Ledger::new();
   let ml_2 = ml.clone();
@@ -22,6 +23,7 @@ pub fn ledger_creation() {
   );
 }
 
+#[test]
 pub fn memory_ledger_insert() {
   let mut ledg = Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
 
