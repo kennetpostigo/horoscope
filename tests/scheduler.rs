@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use horoscope::executor::Executor;
-use horoscope::job::sys::Job;
+use horoscope::job::{sys::Job, Status};
 use horoscope::ledger::{memory, Ledger};
 use horoscope::logger::Logger;
 use horoscope::scheduler::{blocking, daemon, Msg, Schedule, SchedulerState};
@@ -317,5 +317,55 @@ fn scheduler_proxy() {
     assert_equal!(schdlr.stores.len(), 1);
     assert_equal!(schdlr.executors.len(), 1);
     assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 1);
+
+    schdlr
+      .proxy(Msg::PauseJob(format!("job"), format!("store")), &w, &r)
+      .await;
+
+    assert_equal!(
+      &schdlr
+        .stores
+        .get("store")
+        .unwrap()
+        .jobs
+        .get("job")
+        .unwrap()
+        .state,
+      &Status::Paused
+    );
+
+    schdlr
+      .proxy(Msg::ResumeJob(format!("job"), format!("store")), &w, &r)
+      .await;
+
+    assert_equal!(
+      &schdlr
+        .stores
+        .get("store")
+        .unwrap()
+        .jobs
+        .get("job")
+        .unwrap()
+        .state,
+      &Status::Running
+    );
+
+    schdlr
+      .proxy(Msg::RemoveJob(format!("job"), format!("store")), &w, &r)
+      .await;
+
+    assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 0);
+
+    schdlr
+      .proxy(Msg::RemoveExecutor(format!("executor")), &w, &r)
+      .await;
+
+    assert_equal!(schdlr.executors.len(), 0);
+
+    schdlr
+      .proxy(Msg::RemoveStore(format!("store")), &w, &r)
+      .await;
+
+    assert_equal!(schdlr.stores.len(), 0);
   })
 }
