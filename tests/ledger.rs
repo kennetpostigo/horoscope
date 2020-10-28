@@ -93,3 +93,64 @@ pub fn memory_ledger_insert() {
     "Memory Ledger should succeed with different root"
   );
 }
+
+#[test]
+pub fn memory_ledger_entry() {
+  let mut ledg = Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
+  ledg.ledger.insert(
+    &format!("store"),
+    &format!("job"),
+    &Status::Waiting,
+    &Utc::now().timestamp_nanos(),
+  );
+
+  assert_equal!(
+    ledg.ledger.entry(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &Utc::now().timestamp_nanos()
+    ),
+    true,
+    "Memory Ledger should succeed find the entry"
+  );
+
+  assert_equal!(
+    ledg
+      .ledger
+      .entry(&format!("store"), &format!("job"), &Status::Running, &2),
+    false,
+    "Memory Ledger should not find the entry"
+  );
+
+  assert_equal!(
+    ledg
+      .ledger
+      .entry(&format!("store"), &format!("job"), &Status::Running, &1),
+    false,
+    "Memory Ledger should not find the entry"
+  );
+
+  assert_equal!(
+    ledg.ledger.entry(
+      &format!("store"),
+      &format!("job1"),
+      &Status::Running,
+      &1
+    ),
+    false,
+    "Memory Ledger should not find the entry"
+  );
+
+  assert_equal!(
+    ledg.ledger.entry(
+      &format!("store1"),
+      &format!("job"),
+      &Status::Running,
+      &1
+    ),
+    false,
+    "Memory Ledger should not find the entry"
+  );
+}
