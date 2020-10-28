@@ -45,9 +45,35 @@ fn scheduler_add_store() {
     schdlr.startup();
 
     let store = Store::new(String::from("jobStore-test"));
-    schdlr.add_store(format!("store"), store).await.unwrap();
+    let store2 = store.clone();
 
-    assert_equal!(schdlr.stores.len(), 1);
+    assert_equal!(schdlr.add_store(format!("store"), store).await, Ok(()));
+    assert_equal!(
+      schdlr.add_store(format!("store"), store2).await,
+      Err(format!("store alias store already exists in stores"))
+    );
+  })
+}
+
+#[test]
+fn scheduler_remove_store() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let store = Store::new(String::from("jobStore-test"));
+
+    assert_equal!(schdlr.add_store(format!("store"), store).await, Ok(()));
+    assert_equal!(
+      schdlr.remove_store(&format!("store")),
+      Ok(())
+    );
+    assert_equal!(
+      schdlr.remove_store(&format!("store")),
+      Err(format!("Store was not found"))
+    );
   })
 }
 
