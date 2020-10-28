@@ -383,7 +383,8 @@ fn scheduler_check_jobs() {
 
     let store = Store::new(String::from("store"));
     let exec = Executor::new(String::from("executor"));
-    let njob = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+    let job2 = job.clone();
 
     schdlr
       .add_store(String::from("store"), store)
@@ -397,12 +398,27 @@ fn scheduler_check_jobs() {
         String::from("executor"),
         start_time,
         None,
-        Box::new(njob),
+        Box::new(job),
       )
       .unwrap();
 
-    let _ = schdlr.check_jobs().await;
+    schdlr.check_jobs().await;
 
     assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 0);
+
+    schdlr
+      .add_job(
+        String::from("job2"),
+        String::from("store"),
+        String::from("executor"),
+        start_time + 100000000000000000,
+        None,
+        Box::new(job2),
+      )
+      .unwrap();
+
+    schdlr.check_jobs().await;
+
+    assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 1);
   })
 }
