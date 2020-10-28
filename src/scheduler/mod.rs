@@ -16,7 +16,7 @@ use crate::executor::Executor;
 use crate::job::Work;
 use crate::store::Store;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum SchedulerState {
   Uninitialized,
   Running,

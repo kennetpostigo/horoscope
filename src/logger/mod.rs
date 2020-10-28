@@ -10,7 +10,7 @@ pub enum Filter {
   Error,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Logger {
   pub enabled: bool,
   pub filter: Vec<Filter>,
