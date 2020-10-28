@@ -369,3 +369,40 @@ fn scheduler_proxy() {
     assert_equal!(schdlr.stores.len(), 0);
   })
 }
+
+#[test]
+fn scheduler_check_jobs() {
+  task::block_on(async {
+    let start_time = Utc::now().timestamp_nanos() - 500000000000;
+
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("scheduler"), Some(logger));
+
+    schdlr.load_snapshot_from_disk();
+
+    let store = Store::new(String::from("store"));
+    let exec = Executor::new(String::from("executor"));
+    let njob = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+
+    schdlr
+      .add_store(String::from("store"), store)
+      .await
+      .unwrap();
+    schdlr.add_executor(String::from("executor"), exec).unwrap();
+    schdlr
+      .add_job(
+        String::from("job"),
+        String::from("store"),
+        String::from("executor"),
+        start_time,
+        None,
+        Box::new(njob),
+      )
+      .unwrap();
+
+    let _ = schdlr.check_jobs().await;
+
+    assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 0);
+  })
+}
