@@ -60,12 +60,16 @@ fn scheduler_add_executor() {
     schdlr.startup();
 
     let exec = Executor::new(String::from("executor-test"));
+    let exec2 = exec.clone();
     let store = Store::new(String::from("jobStore-test"));
 
     schdlr.add_store(format!("store"), store).await.unwrap();
-    schdlr.add_executor(format!("exec"), exec).unwrap();
 
-    assert_equal!(schdlr.executors.len(), 1);
+    assert_equal!(schdlr.add_executor(format!("exec"), exec), Ok(()));
+    assert_equal!(
+      schdlr.add_executor(format!("exec"), exec2),
+      Err(format!("Executor alias exec already exists"))
+    );
   })
 }
 
@@ -80,20 +84,33 @@ fn scheduler_add_job() {
     let exec = Executor::new(String::from("executor-test"));
     let store = Store::new(String::from("jobStore-test"));
     let job = Job::new(format!("job"), format!("echo"), vec![format!("lol")]);
+    let job2 = job.clone();
 
     schdlr.add_store(format!("store"), store).await.unwrap();
     schdlr.add_executor(format!("exec"), exec).unwrap();
-    schdlr
-      .add_job(
+
+    assert_equal!(
+      schdlr.add_job(
         format!("job"),
         format!("store"),
         format!("exec"),
         Utc::now().timestamp_nanos(),
         None,
         Box::new(job),
-      )
-      .unwrap();
+      ),
+      Ok(())
+    );
 
-    assert_equal!(schdlr.stores.get(&format!("store")).unwrap().jobs.len(), 1);
+    assert_equal!(
+      schdlr.add_job(
+        format!("job"),
+        format!("store-1"),
+        format!("exec"),
+        Utc::now().timestamp_nanos(),
+        None,
+        Box::new(job2),
+      ),
+      Err(format!("Store store-1 is not found in stores"))
+    );
   })
 }
