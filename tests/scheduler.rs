@@ -273,9 +273,49 @@ fn scheduler_resume_job() {
 
     assert_equal!(
       schdlr.resume_job(format!("job"), format!("store1")),
-      Err(format!(
-        "Store store1 was not found in stores"
-      ))
+      Err(format!("Store store1 was not found in stores"))
     );
+  })
+}
+
+#[test]
+fn scheduler_proxy() {
+  task::block_on(async {
+    let (w, r) = async_channel::unbounded();
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let exec = Executor::new(String::from("executor"));
+    let store = Store::new(String::from("store"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("lol")]);
+
+    schdlr
+      .proxy(Msg::AddStore(format!("store"), store), &w, &r)
+      .await;
+
+    schdlr
+      .proxy(Msg::AddExecutor(format!("executor"), exec), &w, &r)
+      .await;
+
+    schdlr
+      .proxy(
+        Msg::AddJob(
+          format!("job"),
+          format!("store"),
+          format!("executor"),
+          Utc::now().timestamp_nanos(),
+          None,
+          Box::new(job),
+        ),
+        &w,
+        &r,
+      )
+      .await;
+
+    assert_equal!(schdlr.stores.len(), 1);
+    assert_equal!(schdlr.executors.len(), 1);
+    assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 1);
   })
 }
