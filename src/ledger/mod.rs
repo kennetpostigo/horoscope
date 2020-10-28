@@ -1,7 +1,7 @@
 pub mod memory;
 
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
-use serde::{Serialize, Deserialize}; 
 
 use crate::job::Status;
 
@@ -13,10 +13,7 @@ pub struct Ledger {
 
 impl Ledger {
   pub fn new(alias: String, ledger: Box<dyn History>) -> Self {
-    Ledger {
-      alias,
-      ledger: ledger,
-    }
+    Ledger { alias, ledger }
   }
 }
 

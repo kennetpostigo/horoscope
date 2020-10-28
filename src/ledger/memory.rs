@@ -1,12 +1,13 @@
 use crate::job::Status;
 use crate::ledger::History;
+
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Ledger {
   pub data: HashMap<
     String,
