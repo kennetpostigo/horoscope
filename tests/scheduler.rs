@@ -66,10 +66,7 @@ fn scheduler_remove_store() {
     let store = Store::new(String::from("jobStore-test"));
 
     assert_equal!(schdlr.add_store(format!("store"), store).await, Ok(()));
-    assert_equal!(
-      schdlr.remove_store(&format!("store")),
-      Ok(())
-    );
+    assert_equal!(schdlr.remove_store(&format!("store")), Ok(()));
     assert_equal!(
       schdlr.remove_store(&format!("store")),
       Err(format!("Store was not found"))
@@ -100,6 +97,30 @@ fn scheduler_add_executor() {
 }
 
 #[test]
+fn scheduler_remove_executor() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let exec = Executor::new(String::from("executor-test"));
+    let store = Store::new(String::from("jobStore-test"));
+
+    schdlr.add_store(format!("store"), store).await.unwrap();
+    schdlr.add_executor(format!("exec"), exec).unwrap();
+
+    assert_equal!(schdlr.remove_executor(&format!("exec")), Ok(()));
+    assert_equal!(
+      schdlr.remove_executor(&format!("exec-nope")),
+      Err(format!(
+        "Executor exec-nope was not found in the schedulers executors"
+      ))
+    );
+  })
+}
+
+#[test]
 fn scheduler_add_job() {
   task::block_on(async {
     let logger = Logger::new(true, vec![]);
@@ -115,17 +136,16 @@ fn scheduler_add_job() {
     schdlr.add_store(format!("store"), store).await.unwrap();
     schdlr.add_executor(format!("exec"), exec).unwrap();
 
-    assert_equal!(
-      schdlr.add_job(
+    schdlr
+      .add_job(
         format!("job"),
         format!("store"),
         format!("exec"),
         Utc::now().timestamp_nanos(),
         None,
         Box::new(job),
-      ),
-      Ok(())
-    );
+      )
+      .unwrap();
 
     assert_equal!(
       schdlr.add_job(
@@ -137,6 +157,125 @@ fn scheduler_add_job() {
         Box::new(job2),
       ),
       Err(format!("Store store-1 is not found in stores"))
+    );
+  })
+}
+
+#[test]
+fn scheduler_remove_job() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let exec = Executor::new(String::from("executor-test"));
+    let store = Store::new(String::from("jobStore-test"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("lol")]);
+
+    schdlr.add_store(format!("store"), store).await.unwrap();
+    schdlr.add_executor(format!("exec"), exec).unwrap();
+    schdlr
+      .add_job(
+        format!("job"),
+        format!("store"),
+        format!("exec"),
+        Utc::now().timestamp_nanos(),
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    assert_equal!(schdlr.remove_job(format!("job"), format!("store"),), Ok(()));
+
+    assert_equal!(
+      schdlr.remove_job(format!("job"), format!("store"),),
+      Err(format!("Job job was not found in the Store jobStore-test"))
+    );
+  })
+}
+
+#[test]
+fn scheduler_pause_job() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let exec = Executor::new(String::from("executor-test"));
+    let store = Store::new(String::from("jobStore-test"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("lol")]);
+
+    schdlr.add_store(format!("store"), store).await.unwrap();
+    schdlr.add_executor(format!("exec"), exec).unwrap();
+    schdlr
+      .add_job(
+        format!("job"),
+        format!("store"),
+        format!("exec"),
+        Utc::now().timestamp_nanos(),
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    assert_equal!(schdlr.pause_job(format!("job"), format!("store")), Ok(()));
+
+    assert_equal!(
+      schdlr.pause_job(format!("job1"), format!("store"),),
+      Err(format!(
+        "Failed to Pause Job job1, it\'s not found in Store jobStore-test"
+      ))
+    );
+
+    assert_equal!(
+      schdlr.pause_job(format!("job"), format!("store1"),),
+      Err(format!("Store store1 was not found in stores"))
+    );
+  })
+}
+
+#[test]
+fn scheduler_resume_job() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+    schdlr.startup();
+
+    let exec = Executor::new(String::from("executor-test"));
+    let store = Store::new(String::from("jobStore-test"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("lol")]);
+
+    schdlr.add_store(format!("store"), store).await.unwrap();
+    schdlr.add_executor(format!("exec"), exec).unwrap();
+    schdlr
+      .add_job(
+        format!("job"),
+        format!("store"),
+        format!("exec"),
+        Utc::now().timestamp_nanos(),
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    schdlr.pause_job(format!("job"), format!("store")).unwrap();
+
+    assert_equal!(schdlr.resume_job(format!("job"), format!("store")), Ok(()));
+    assert_equal!(
+      schdlr.resume_job(format!("job1"), format!("store")),
+      Err(format!(
+        "Failed to Resume Job job1, it\'s not found in Store jobStore-test"
+      ))
+    );
+
+    assert_equal!(
+      schdlr.resume_job(format!("job"), format!("store1")),
+      Err(format!(
+        "Store store1 was not found in stores"
+      ))
     );
   })
 }
