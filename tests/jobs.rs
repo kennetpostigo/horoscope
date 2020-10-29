@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use horoscope::job::network::NetType;
 use horoscope::job::{network, sys, Job, Status, Work};
 use horoscope::ledger::{memory, Ledger};
-use horoscope::trigger::{test_trigger, Trigger};
+use horoscope::trigger::{job_trigger, test_trigger, Trigger};
 #[test]
 fn sys_job_startup_ok() {
   task::block_on(async {
@@ -327,6 +327,7 @@ fn job_validate_triggers() {
   task::block_on(async {
     let mut ledg =
       Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
     let start_time = {
       let now = Utc::now().timestamp_nanos();
       let delay: i64 = -10000000000;
@@ -339,6 +340,21 @@ fn job_validate_triggers() {
       vec![format!("test")],
     );
 
+    ledg.ledger.insert(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &Utc::now().timestamp_nanos(),
+    );
+
+    let jtrig = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      Utc::now().timestamp_nanos(),
+    );
+
     let mut job = Job::new(
       String::from("jobby"),
       String::from("exo"),
@@ -348,11 +364,16 @@ fn job_validate_triggers() {
       Box::new(sjob),
     );
 
+
     let trig =
       test_trigger::Trigger::new(format!("triggy"), true, Some(start_time));
 
     job
       .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+      .unwrap();
+
+    job
+      .add_trigger(Trigger::new(format!("trigga"), Box::new(jtrig)))
       .unwrap();
 
     assert_equal!(
@@ -442,7 +463,7 @@ fn trigger_vclone() {
       String::from("http://ping.me"),
       NetType::Get,
       None,
-      None
+      None,
     );
 
     let njc = njob.vclone();
