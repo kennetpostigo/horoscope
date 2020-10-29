@@ -364,7 +364,6 @@ fn job_validate_triggers() {
       Box::new(sjob),
     );
 
-
     let trig =
       test_trigger::Trigger::new(format!("triggy"), true, Some(start_time));
 
@@ -379,6 +378,67 @@ fn job_validate_triggers() {
     assert_equal!(
       job.validate_triggers(&mut ledg).await,
       (true, Some(start_time)),
+      "Job trigger should have been added"
+    );
+  })
+}
+
+#[test]
+fn job_validate_triggers_failure() {
+  task::block_on(async {
+    let mut ledg =
+      Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+
+    let start_time = {
+      let now = Utc::now().timestamp_nanos();
+      let delay: i64 = -10000000000;
+      now + delay
+    };
+
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    ledg.ledger.insert(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &Utc::now().timestamp_nanos(),
+    );
+
+    let mut job = Job::new(
+      String::from("jobby"),
+      String::from("exo"),
+      start_time,
+      None,
+      HashMap::new(),
+      Box::new(sjob),
+    );
+
+    let trig =
+      test_trigger::Trigger::new(format!("triggy"), false, None);
+
+    let jtrig = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      Utc::now().timestamp_nanos() + 100000000000,
+    );
+
+    job
+      .add_trigger(Trigger::new(format!("triggy"), Box::new(trig)))
+      .unwrap();
+
+    job
+      .add_trigger(Trigger::new(format!("trigga"), Box::new(jtrig)))
+      .unwrap();
+
+    assert_equal!(
+      job.validate_triggers(&mut ledg).await,
+      (false, None),
       "Job trigger should have been added"
     );
   })
