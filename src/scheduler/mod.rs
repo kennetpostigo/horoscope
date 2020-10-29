@@ -71,7 +71,10 @@ pub fn get_elapsed_time(start_time: i64) {
   println!("{}", now - start_time * 1000000);
 }
 
-pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
+pub fn daemon(
+  scheduler: Box<dyn Schedule>,
+  save_state: bool,
+) -> (Sender<Msg>, Receiver<Msg>) {
   let mut schdlr = scheduler;
   let (s, r) = async_channel::unbounded();
   let (s_cpy, r_cpy) = (s.clone(), r.clone());
@@ -93,8 +96,10 @@ pub fn daemon(scheduler: Box<dyn Schedule>) -> (Sender<Msg>, Receiver<Msg>) {
                   Some(_) => {
                     schdlr.check_jobs().await;
                     if (schdlr.is_dirty()) {
-                      println!("Saving snapshot");
-                      schdlr.save_snapshot();
+                      if (save_state){
+                        println!("Saving snapshot");
+                        schdlr.save_snapshot();
+                      }
                       schdlr.set_dirty(false);
                     }
                   },

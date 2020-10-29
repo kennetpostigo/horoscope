@@ -581,3 +581,34 @@ fn scheduler_snapshots() {
     );
   })
 }
+
+#[test]
+fn scheduler_daemon() {
+  task::block_on(async {
+    let logger = Logger::new(true, vec![]);
+    let schdlr =
+      blocking::Scheduler::new(String::from("blk_scheduler"), Some(logger));
+
+    let store = Store::new(String::from("store"));
+    let exec = Executor::new(String::from("executor"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+    let (sender, _reader) = daemon(Box::new(schdlr), false);
+
+    sender.send(Msg::AddStore(format!("store"), store)).await.unwrap();
+    sender.send(Msg::AddExecutor(format!("executor"), exec)).await.unwrap();
+
+     match sender
+        .send(Msg::AddJob(
+          format!("job"),
+          format!("store"),
+          format!("executor"),
+          Utc::now().timestamp_nanos(),
+          None,
+          Box::new(job),
+        ))
+        .await {
+          Ok(s) => assert_equal!(s, ()),
+          Err(_) => assert_equal!(true, false)
+        }
+  });
+}

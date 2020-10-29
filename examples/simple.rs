@@ -52,7 +52,7 @@ async fn main() {
     )
     .unwrap();
 
-  let (sender, _reader) = daemon(Box::new(blk_scheduler));
+  let (sender, _reader) = daemon(Box::new(blk_scheduler), true);
 
   match sender
     .send(Msg::Log(
