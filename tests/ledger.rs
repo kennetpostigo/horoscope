@@ -153,3 +153,25 @@ pub fn memory_ledger_entry() {
     "Memory Ledger should not find the entry"
   );
 }
+
+#[test]
+fn ledger_vclone() {
+  let mut ledg = Ledger::new(format!("horo"), Box::new(memory::Ledger::new()));
+  ledg.ledger.insert(
+    &format!("store"),
+    &format!("job"),
+    &Status::Waiting,
+    &Utc::now().timestamp_nanos(),
+  );
+  let mut x = ledg.ledger.vclone();
+
+  assert_equal!(
+    x.entry(
+      &format!("store"),
+      &format!("job"),
+      &Status::Waiting,
+      &Utc::now().timestamp_nanos()
+    ),
+    true
+  );
+}

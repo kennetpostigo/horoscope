@@ -318,6 +318,22 @@ fn time_trigger_next_mismatch() {
 }
 
 #[test]
+fn time_vclone() {
+  task::block_on(async {
+    let now = Utc::now();
+    let tt = time_trigger::Trigger::new(
+      format!("trigga"),
+      Some(5),
+      None,
+      Some(time_trigger::Time(now.hour() + 1, now.minute() + 1)),
+    );
+
+    let mut tt2 = tt.vclone();
+    assert_equal!(tt2.next().await, None);
+  })
+}
+
+#[test]
 fn job_trigger_should_run_with_ledger() {
   task::block_on(async {
     let time = Utc::now().timestamp_nanos();
@@ -433,6 +449,24 @@ fn job_trigger_needs_ledger() {
 }
 
 #[test]
+fn job_vclone() {
+  task::block_on(async {
+    let time = Utc::now().timestamp_nanos();
+
+    let jt = job_trigger::Trigger::new(
+      format!("trigga"),
+      format!("job"),
+      format!("store"),
+      Status::Waiting,
+      time,
+    );
+
+    let mut jt2 = jt.vclone();
+    assert_equal!(jt2.next().await, None);
+  });
+}
+
+#[test]
 fn retry_trigger_should_run() {
   task::block_on(async {
     let mut rt = retry_trigger::Trigger::new(format!("triggy"), 3);
@@ -507,6 +541,16 @@ fn retry_trigger_next_fail() {
     rt.should_run().await;
 
     assert_equal!(rt.next().await, None, "Retry Trigger should fail with next");
+  });
+}
+
+#[test]
+fn retry_vclone() {
+  task::block_on(async {
+    let rt = retry_trigger::Trigger::new(format!("triggy"), 0);
+
+    let mut rt2 = rt.vclone();
+    assert_equal!(rt2.next().await, None);
   });
 }
 
@@ -593,6 +637,25 @@ fn and_trigger_next() {
 }
 
 #[test]
+fn and_vclone() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let at = and_trigger::Trigger::new(format!("triggy"), left, right);
+    let mut at2 = at.vclone();
+
+    assert_equal!(at2.next().await, None);
+  });
+}
+
+#[test]
 fn or_trigger_should_run() {
   task::block_on(async {
     let left = Trigger::new(
@@ -646,9 +709,7 @@ fn or_trigger_should_not_run() {
   });
 }
 
-#[should_panic(
-  expected = "trigger::or_trigger - DOES NOT REQUIRE LEDGER"
-)]
+#[should_panic(expected = "trigger::or_trigger - DOES NOT REQUIRE LEDGER")]
 #[test]
 fn or_trigger_should_run_with_ledger() {
   task::block_on(async {
@@ -690,4 +751,23 @@ fn or_trigger_next() {
 
     assert_equal!(ot.next().await, None, "Or Trigger should always give None");
   })
+}
+
+#[test]
+fn or_vclone() {
+  task::block_on(async {
+    let left = Trigger::new(
+      format!("left"),
+      Box::new(test_trigger::Trigger::new(format!("left"), true, None)),
+    );
+    let right = Trigger::new(
+      format!("right"),
+      Box::new(test_trigger::Trigger::new(format!("right"), true, None)),
+    );
+
+    let ot = or_trigger::Trigger::new(format!("triggy"), left, right);
+    let mut ot2 = ot.vclone();
+    
+    assert_equal!(ot2.next().await, None);
+  });
 }

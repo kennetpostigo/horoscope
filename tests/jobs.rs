@@ -423,3 +423,30 @@ fn job_resume_job() {
     assert_equal!(job.state, Status::Running, "Job should be paused");
   })
 }
+
+#[test]
+fn trigger_vclone() {
+  task::block_on(async {
+    let sjob = sys::Job::new(
+      String::from("jobby"),
+      String::from("echo"),
+      vec![format!("test")],
+    );
+
+    let sjc = sjob.vclone();
+
+    assert_equal!(sjc.startup().await, Ok(()));
+
+    let njob = network::Job::new(
+      String::from("jobby"),
+      String::from("http://ping.me"),
+      NetType::Get,
+      None,
+      None
+    );
+
+    let njc = njob.vclone();
+
+    assert_equal!(njc.startup().await, Ok(()));
+  });
+}
