@@ -422,3 +422,80 @@ fn scheduler_check_jobs() {
     assert_equal!(schdlr.stores.get("store").unwrap().jobs.len(), 1);
   })
 }
+
+#[test]
+fn scheduler_is_dirty() {
+  task::block_on(async {
+    let start_time = Utc::now().timestamp_nanos() - 500000000000;
+
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("scheduler"), Some(logger));
+
+    let store = Store::new(String::from("store"));
+    let exec = Executor::new(String::from("executor"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+
+    assert_equal!(schdlr.is_dirty(), false);
+
+    schdlr
+      .add_store(String::from("store"), store)
+      .await
+      .unwrap();
+
+    schdlr.add_executor(String::from("executor"), exec).unwrap();
+
+    schdlr
+      .add_job(
+        String::from("job"),
+        String::from("store"),
+        String::from("executor"),
+        start_time,
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    assert_equal!(schdlr.is_dirty(), true);
+  })
+}
+
+#[test]
+fn scheduler_set_dirty() {
+  task::block_on(async {
+    let start_time = Utc::now().timestamp_nanos() - 500000000000;
+
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("scheduler"), Some(logger));
+
+    let store = Store::new(String::from("store"));
+    let exec = Executor::new(String::from("executor"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+
+    assert_equal!(schdlr.is_dirty(), false);
+
+    schdlr
+      .add_store(String::from("store"), store)
+      .await
+      .unwrap();
+
+    schdlr.add_executor(String::from("executor"), exec).unwrap();
+
+    schdlr
+      .add_job(
+        String::from("job"),
+        String::from("store"),
+        String::from("executor"),
+        start_time,
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    assert_equal!(schdlr.is_dirty(), true);
+
+    schdlr.set_dirty(false);
+    assert_equal!(schdlr.is_dirty(), false);
+  })
+}
