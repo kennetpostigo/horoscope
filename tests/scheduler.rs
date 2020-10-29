@@ -2,11 +2,10 @@ use async_std::task;
 use chrono::prelude::*;
 use k9::assert_equal;
 use std::collections::HashMap;
-use std::time::Duration;
 
 use horoscope::executor::Executor;
 use horoscope::job::{sys::Job, Status};
-use horoscope::ledger::{memory, Ledger};
+// use horoscope::ledger::{memory, Ledger};
 use horoscope::logger::Logger;
 use horoscope::scheduler::{blocking, daemon, Msg, Schedule, SchedulerState};
 use horoscope::store::Store;
@@ -379,8 +378,6 @@ fn scheduler_check_jobs() {
     let mut schdlr =
       blocking::Scheduler::new(String::from("scheduler"), Some(logger));
 
-    schdlr.load_snapshot_from_disk();
-
     let store = Store::new(String::from("store"));
     let exec = Executor::new(String::from("executor"));
     let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
@@ -497,5 +494,90 @@ fn scheduler_set_dirty() {
 
     schdlr.set_dirty(false);
     assert_equal!(schdlr.is_dirty(), false);
+  })
+}
+
+#[test]
+fn scheduler_vclone() {
+  let schdlr = blocking::Scheduler::new(String::from("scheduler"), None);
+  let x = schdlr.vclone();
+
+  assert_equal!(x.is_dirty(), false);
+}
+
+#[test]
+fn scheduler_snapshots() {
+  task::block_on(async {
+    let start_time = Utc::now().timestamp_nanos() - 500000000000;
+
+    let logger = Logger::new(true, vec![]);
+    let mut schdlr =
+      blocking::Scheduler::new(String::from("scheduler"), Some(logger));
+
+    let store = Store::new(String::from("store"));
+    let exec = Executor::new(String::from("executor"));
+    let job = Job::new(format!("job"), format!("echo"), vec![format!("test")]);
+
+    assert_equal!(schdlr.is_dirty(), false);
+
+    schdlr
+      .add_store(String::from("store"), store)
+      .await
+      .unwrap();
+
+    schdlr.add_executor(String::from("executor"), exec).unwrap();
+
+    schdlr
+      .add_job(
+        String::from("job"),
+        String::from("store"),
+        String::from("executor"),
+        start_time,
+        None,
+        Box::new(job),
+      )
+      .unwrap();
+
+    schdlr.save_snapshot();
+
+    schdlr.remove_job(format!("job"), format!("store")).unwrap();
+
+    schdlr.load_snapshot_from_disk();
+
+    println!("{:?}", schdlr.stores.get("store").unwrap().jobs);
+
+    assert_equal!(
+      &schdlr
+        .stores
+        .get("store")
+        .unwrap()
+        .jobs
+        .get("job")
+        .unwrap()
+        .alias,
+      &format!("job")
+    );
+
+    assert_equal!(schdlr.create_snapshot(), schdlr.create_snapshot());
+
+    let snap = schdlr.create_snapshot();
+
+    schdlr.remove_job(format!("job"), format!("store")).unwrap();
+
+    assert_equal!(snap == schdlr.create_snapshot(), false);
+
+    schdlr.load_snapshot_from_mem(snap);
+
+    assert_equal!(
+      &schdlr
+        .stores
+        .get("store")
+        .unwrap()
+        .jobs
+        .get("job")
+        .unwrap()
+        .alias,
+      &format!("job")
+    );
   })
 }

@@ -38,7 +38,7 @@ impl Job {
 }
 
 #[async_trait]
-#[typetag::serde]
+#[typetag::serde(name = "NetworkJob")]
 impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
     println!(

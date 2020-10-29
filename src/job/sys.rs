@@ -23,7 +23,7 @@ impl Job {
 }
 
 #[async_trait]
-#[typetag::serde]
+#[typetag::serde(name = "SystemJob")]
 impl Work for Job {
   async fn startup(&self) -> Result<(), String> {
     println!(

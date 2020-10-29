@@ -22,7 +22,7 @@ impl Trigger {
 }
 
 #[async_trait]
-#[typetag::serde]
+#[typetag::serde(name = "OrTrigger")]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     self.left.trigger.should_run().await

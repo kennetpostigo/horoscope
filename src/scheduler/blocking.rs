@@ -165,7 +165,8 @@ impl Schedule for Scheduler {
             match executioner {
               None => (),
               Some(e) => {
-                let (should_run, next) = to_execute.validate_triggers(&mut self.ledger).await;
+                let (should_run, next) =
+                  to_execute.validate_triggers(&mut self.ledger).await;
                 if (should_run) {
                   match (e.execute(&to_execute.job).await) {
                     Ok(_v) => {
@@ -418,7 +419,7 @@ impl Schedule for Scheduler {
   }
 
   fn create_snapshot(&mut self) -> Vec<u8> {
-    bincode::serialize(&self).unwrap()
+    bincode::serialize(&self.clone()).unwrap()
   }
 
   fn save_snapshot(&mut self) {
@@ -440,7 +441,10 @@ impl Schedule for Scheduler {
             self.executors = v.executors;
             self.logger = v.logger;
           }
-          Err(_) => {}
+          Err(e) => match self.logger.clone() {
+            Some(logger) => logger.err(format!("{}", e)),
+            None => {}
+          },
         }
       }
       None => {}

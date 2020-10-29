@@ -33,7 +33,7 @@ impl Trigger {
 }
 
 #[async_trait]
-#[typetag::serde]
+#[typetag::serde(name = "JobTrigger")]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     panic!("trigger::job_trigger - REQUIRES SHOULD_RUN")

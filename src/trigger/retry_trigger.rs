@@ -23,7 +23,7 @@ impl Trigger {
 }
 
 #[async_trait]
-#[typetag::serde]
+#[typetag::serde(name = "RetryTrigger")]
 impl trigger::Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     if (&self.attempts < &self.run) {

@@ -92,8 +92,8 @@ enum DateTimeMatch {
   Nothing,
 }
 
-#[async_trait]
-#[typetag::serde]
+#[async_trait ]
+#[typetag::serde(name = "TimeTrigger")]
 impl Fire for Trigger {
   async fn should_run(&mut self) -> bool {
     let now = Utc::now();
