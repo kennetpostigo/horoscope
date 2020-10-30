@@ -425,7 +425,7 @@ fn job_validate_triggers_failure() {
       format!("job"),
       format!("store"),
       Status::Waiting,
-      Utc::now().timestamp_nanos() + 100000000000,
+      Utc::now().timestamp_nanos() - 100000000000,
     );
 
     job
