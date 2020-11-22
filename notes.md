@@ -183,13 +183,15 @@ essential to use, specifically:
 remote database.
 
 ## Checklist
-
-1. Implement `listeners`/`event` system
-2. Start building out a testsuite
-3. Examples:
+1. Integrate Listener/Event System with scheduler
+2. Examples:
     - Running in a server
     - Examples with all the triggers
     - Examples with all job types
     - Examples with custom userland jobs
-4. Library website similar to async that has notes/guides and link to generated 
+3. Library website similar to async that has notes/guides and link to generated 
 api docs
+
+## Testing
+- [Job mod] Test for to Job Status to_string
+- [NetworkJob] Post Request test
